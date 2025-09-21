@@ -8,7 +8,7 @@ import {
   Tool,
   Resource,
 } from '@modelcontextprotocol/sdk/types.js';
-import { z } from 'zod';
+// import { z } from 'zod'; // Not used in this file
 
 // Import our existing tool handlers
 import {
@@ -720,7 +720,7 @@ server.setRequestHandler(ListResourcesRequestSchema, async () => ({
 server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
   // Handle resource reading
   const uri = new URL(request.params.uri);
-  const sessionId = uri.pathname.split('/')[1];
+  // const sessionId = uri.pathname.split('/')[1]; // Not used yet
 
   // This would need to be implemented based on your resource structure
   return {
@@ -735,7 +735,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  const { name, arguments: args = {} } = request.params;
 
   const handler = toolHandlers.get(name);
   if (!handler) {
@@ -747,13 +747,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     req: {
       json: () => Promise.resolve(args),
       header: (name: string) => {
-        if (name === 'sessionId' && args.sessionId) {
+        if (name === 'sessionId' && args && args.sessionId) {
           return args.sessionId;
         }
         return undefined;
       },
     },
-    json: (data: any, status?: number) => {
+    json: (data: unknown, status?: number) => {
       if (status && status >= 400) {
         throw new Error(data.error || 'Tool execution failed');
       }
@@ -775,7 +775,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   };
 
   try {
-    const result = await handler(mockContext as any);
+    const result = await handler(mockContext as unknown);
     return {
       content: [
         {

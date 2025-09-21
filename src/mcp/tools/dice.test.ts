@@ -38,7 +38,7 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as any);
+      await diceRollHandler(mockCtx as unknown);
 
       expect(mockCtx.env.RngDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -62,14 +62,8 @@ describe('Dice MCP Tools', () => {
       });
       mockCtx.req.header.mockReturnValue(undefined);
 
-      await diceRollHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        {
-          success: false,
-          error: 'sessionId required in header or body',
-        },
-        400,
+      await expect(diceRollHandler(mockCtx as any)).rejects.toThrow(
+        'sessionId required in header or body',
       );
     });
 
@@ -96,14 +90,8 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.get.mockReturnValue(mockRngDO);
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        {
-          success: false,
-          error: 'RNG service unavailable',
-        },
-        500,
+      await expect(diceRollHandler(mockCtx as any)).rejects.toThrow(
+        'RNG service unavailable',
       );
     });
 
@@ -111,14 +99,8 @@ describe('Dice MCP Tools', () => {
       const mockCtx = createMockContext();
       mockCtx.req.json.mockRejectedValue(new Error('Invalid JSON'));
 
-      await diceRollHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        {
-          success: false,
-          error: 'Invalid JSON',
-        },
-        500,
+      await expect(diceRollHandler(mockCtx as any)).rejects.toThrow(
+        'Invalid JSON',
       );
     });
 
@@ -137,14 +119,8 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.get.mockReturnValue(mockRngDO);
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        {
-          success: false,
-          error: 'Network error',
-        },
-        500,
+      await expect(diceRollHandler(mockCtx as any)).rejects.toThrow(
+        'Network error',
       );
     });
 
@@ -171,7 +147,7 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.get.mockReturnValue(mockRngDO);
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as any);
+      await diceRollHandler(mockCtx as unknown);
 
       expect(mockRngDO.fetch).toHaveBeenCalledWith(
         expect.objectContaining({

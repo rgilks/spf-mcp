@@ -43,7 +43,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionCreateHandler(mockCtx as any);
+      await sessionCreateHandler(mockCtx as unknown);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -69,15 +69,7 @@ describe('Session MCP Tools', () => {
         },
       });
 
-      await sessionCreateHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false,
-          error: expect.any(String),
-        }),
-        400,
-      );
+      await expect(sessionCreateHandler(mockCtx as unknown)).rejects.toThrow();
     });
   });
 
@@ -98,7 +90,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionLoadHandler(mockCtx as any);
+      await sessionLoadHandler(mockCtx as unknown);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -130,7 +122,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionLoadHandler(mockCtx as any);
+      await sessionLoadHandler(mockCtx as unknown);
 
       expect(mockCtx.json).toHaveBeenCalledWith(
         {
@@ -145,14 +137,8 @@ describe('Session MCP Tools', () => {
       const mockCtx = createMockContext();
       mockCtx.req.param.mockReturnValue(undefined);
 
-      await sessionLoadHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        {
-          success: false,
-          error: 'sessionId parameter required',
-        },
-        400,
+      await expect(sessionLoadHandler(mockCtx as unknown)).rejects.toThrow(
+        'sessionId parameter required',
       );
     });
   });
@@ -184,7 +170,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionUpdateHandler(mockCtx as any);
+      await sessionUpdateHandler(mockCtx as unknown);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -220,7 +206,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionUpdateHandler(mockCtx as any);
+      await sessionUpdateHandler(mockCtx as unknown);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
     });
@@ -232,15 +218,7 @@ describe('Session MCP Tools', () => {
         name: 'Updated Session',
       });
 
-      await sessionUpdateHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false,
-          error: expect.any(String),
-        }),
-        400,
-      );
+      await expect(sessionUpdateHandler(mockCtx as unknown)).rejects.toThrow();
     });
   });
 
@@ -262,7 +240,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionEndHandler(mockCtx as any);
+      await sessionEndHandler(mockCtx as unknown);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -281,15 +259,7 @@ describe('Session MCP Tools', () => {
         sessionId: 'invalid-uuid',
       });
 
-      await sessionEndHandler(mockCtx as any);
-
-      expect(mockCtx.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          success: false,
-          error: expect.any(String),
-        }),
-        400,
-      );
+      await expect(sessionEndHandler(mockCtx as unknown)).rejects.toThrow();
     });
   });
 });
