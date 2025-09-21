@@ -8,6 +8,8 @@
     "deploy": "wrangler deploy",
     "mcp": "tsx src/mcp-server.ts",
     "mcp:dev": "tsx --watch src/mcp-server.ts",
+    "demo": "node demo.js",
+    "demo:live": "node demo.js --live",
     "check": "tsc -p tsconfig.json --noEmit",
     "format": "prettier -w .",
     "format:check": "prettier --check .",

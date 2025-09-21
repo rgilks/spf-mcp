@@ -138,8 +138,6 @@ app.all('*', (c) => {
   return c.json({ error: 'Not Found' }, 404);
 });
 
-export default {
-  fetch: app.fetch,
-};
+export default app;
 
 export { CombatDO, DeckDO, RngDO, SessionDO };

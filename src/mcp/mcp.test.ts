@@ -34,10 +34,10 @@ describe('MCP Server Integration', () => {
 
   describe('MCP Configuration', () => {
     it('should have MCP client configuration files', () => {
-      const clientConfigPath = join(process.cwd(), 'mcp-client-config.json');
+      const mcpConfigPath = join(process.cwd(), 'mcp-config.json');
       const cursorConfigPath = join(process.cwd(), 'cursor-mcp-server.json');
 
-      expect(existsSync(clientConfigPath)).toBe(true);
+      expect(existsSync(mcpConfigPath)).toBe(true);
       expect(existsSync(cursorConfigPath)).toBe(true);
     });
 
