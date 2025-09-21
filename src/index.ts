@@ -56,8 +56,8 @@ app.use('*', async (c, next) => {
 });
 
 // Apply security middleware
-app.use('*', securityHeaders);
-app.use('*', securityLogging);
+app.use('*', securityHeaders as any);
+app.use('*', securityLogging as any);
 app.use('*', secureCors);
 app.use('*', sanitizeInput as any);
 

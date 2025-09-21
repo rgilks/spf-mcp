@@ -7,7 +7,7 @@ export async function testAuthMiddleware(
   next: () => Promise<void>,
 ) {
   // Only allow in test environment
-  if (c.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'test') {
+  if (process.env.NODE_ENV !== 'test') {
     console.error(
       'Test authentication middleware used in non-test environment',
     );

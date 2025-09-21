@@ -14,9 +14,9 @@ export const secureCors = cors({
     ];
 
     // Allow requests with no origin (e.g., mobile apps, Postman)
-    if (!origin) return true;
+    if (!origin) return origin;
 
-    return allowedOrigins.includes(origin);
+    return allowedOrigins.includes(origin) ? origin : null;
   },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Session-ID', 'X-API-Key'],
