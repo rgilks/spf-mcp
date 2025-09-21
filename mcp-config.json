@@ -1,0 +1,16 @@
+{
+  "name": "savage-pathfinder",
+  "version": "1.0.0",
+  "description": "Savage Pathfinder MCP Server for AI-powered tabletop gaming",
+  "server": {
+    "command": "npm",
+    "args": ["run", "dev"],
+    "env": {
+      "NODE_ENV": "development"
+    }
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": true
+  }
+}
