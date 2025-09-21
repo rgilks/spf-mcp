@@ -63,7 +63,7 @@ const app = new Hono<{ Bindings: Env }>();
 // app.use('*', securityHeaders as any);
 // app.use('*', securityLogging as any);
 app.use('*', secureCors);
-app.use('*', sanitizeInput as any);
+// app.use('*', sanitizeInput as any);
 
 // Public endpoints (no auth required)
 app.get('/healthz', async (c) => {
