@@ -7,7 +7,9 @@ const mockEnv = {
     prepare: vi.fn().mockReturnValue({
       bind: vi.fn().mockReturnValue({
         run: vi.fn().mockResolvedValue({ success: true }),
-        first: vi.fn().mockResolvedValue({ id: 'test-session' }),
+        first: vi
+          .fn()
+          .mockResolvedValue({ id: '12345678-1234-1234-8234-123456789abc' }),
         all: vi.fn().mockResolvedValue({ results: [] }),
       }),
     }),
@@ -79,16 +81,22 @@ const mockEnv = {
           return new Response(
             JSON.stringify({
               success: true,
-              data: { sessionId: body.sessionId || 'test-session' },
+              data: {
+                sessionId:
+                  body.sessionId || '12345678-1234-1234-8234-123456789abc',
+              },
             }),
           );
         }
 
-        if (path.includes('/test-session/get')) {
+        if (path.match(/\/[0-9a-fA-F-]+\/get$/)) {
           return new Response(
             JSON.stringify({
               success: true,
-              data: { id: 'test-session', name: 'Test Session' },
+              data: {
+                id: '12345678-1234-1234-8234-123456789abc',
+                name: 'Test Session',
+              },
             }),
           );
         }
@@ -153,7 +161,7 @@ describe('Integration Tests', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           formula: '2d6+1',
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
         }),
       });
 
@@ -208,7 +216,7 @@ describe('Integration Tests', () => {
 
     it('should load an existing session', async () => {
       const request = new Request(
-        'http://localhost/mcp/session/test-session/get',
+        'http://localhost/mcp/session/12345678-1234-1234-8234-123456789abc/get',
       );
       const response = await app.fetch(request, mockEnv);
 
@@ -216,14 +224,18 @@ describe('Integration Tests', () => {
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await response.text();
-        console.error('Non-JSON response:', text);
-        throw new Error('Expected JSON response');
+        throw new Error(
+          `Expected JSON response. Status: ${response.status}, Content-Type: ${contentType}, Body: ${text}`,
+        );
       }
 
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('id', 'test-session');
+      expect(result.data).toHaveProperty(
+        'id',
+        '12345678-1234-1234-8234-123456789abc',
+      );
     });
   });
 
@@ -258,7 +270,7 @@ describe('Integration Tests', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           actor: {
             type: 'pc',
             name: 'Test Character',
@@ -306,8 +318,11 @@ describe('Integration Tests', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          participants: ['actor1', 'actor2'],
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          participants: [
+            '87654321-4321-1234-8234-cba987654321',
+            '87654321-4321-1234-8234-cba987654322',
+          ],
         }),
       });
 
@@ -341,7 +356,7 @@ describe('Integration Tests', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           extraDraws: {},
         }),
       });

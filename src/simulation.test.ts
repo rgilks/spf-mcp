@@ -10,7 +10,7 @@ const createMockEnv = () => ({
         first: vi.fn().mockImplementation((query) => {
           if (query.includes('sessions')) {
             return Promise.resolve({
-              id: 'sim-session',
+              id: '12345678-1234-1234-8234-123456789abc',
               name: 'Simulation Session',
               status: 'in_progress',
               round: 1,
@@ -36,7 +36,7 @@ const createMockEnv = () => ({
             JSON.stringify({
               success: true,
               data: {
-                sessionId: 'sim-session',
+                sessionId: '12345678-1234-1234-8234-123456789abc',
                 status: 'idle',
                 round: 0,
                 turn: 0,
@@ -80,7 +80,7 @@ const createMockEnv = () => ({
             JSON.stringify({
               success: true,
               data: {
-                sessionId: 'sim-session',
+                sessionId: '12345678-1234-1234-8234-123456789abc',
                 status: 'turn_active',
                 round: 1,
                 turn: 1,
@@ -164,7 +164,7 @@ const createMockEnv = () => ({
           return new Response(
             JSON.stringify({
               success: true,
-              data: { sessionId: 'sim-session' },
+              data: { sessionId: '12345678-1234-1234-8234-123456789abc' },
               serverTs: new Date().toISOString(),
             }),
           );
@@ -267,6 +267,17 @@ describe('Full Combat Simulation', () => {
 
     const valerosResponse = await app.fetch(createValerosRequest, mockEnv);
     const valerosResult = (await valerosResponse.json()) as any;
+
+    if (!valerosResult.success) {
+      console.log(
+        'Valeros creation failed:',
+        JSON.stringify(valerosResult, null, 2),
+      );
+      throw new Error(
+        `Valeros creation failed: ${JSON.stringify(valerosResult)}`,
+      );
+    }
+
     expect(valerosResult.success).toBe(true);
     const valerosId = valerosResult.data.id;
 
@@ -349,6 +360,17 @@ describe('Full Combat Simulation', () => {
 
     const goblin1Response = await app.fetch(createGoblin1Request, mockEnv);
     const goblin1Result = (await goblin1Response.json()) as any;
+
+    if (!goblin1Result.success) {
+      console.log(
+        'Goblin1 creation failed:',
+        JSON.stringify(goblin1Result, null, 2),
+      );
+      throw new Error(
+        `Goblin1 creation failed: ${JSON.stringify(goblin1Result)}`,
+      );
+    }
+
     expect(goblin1Result.success).toBe(true);
     const goblin1Id = goblin1Result.data.id;
 
@@ -525,7 +547,7 @@ describe('Full Combat Simulation', () => {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
           formula: testCase.formula,
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
         }),
       });
 

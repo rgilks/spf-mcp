@@ -25,15 +25,8 @@ export class SessionDO {
     const path = url.pathname;
 
     try {
-      if (request.method === 'POST' && path.endsWith('/create')) {
-        return await this.handleCreate(request);
-      } else if (request.method === 'GET' && path.endsWith('/get')) {
-        return await this.handleGet(request);
-      } else if (request.method === 'POST' && path.endsWith('/update')) {
-        return await this.handleUpdate(request);
-      } else if (request.method === 'POST' && path.endsWith('/end')) {
-        return await this.handleEnd(request);
-      } else if (request.method === 'POST' && path.endsWith('/actor/create')) {
+      // Actor routes must come first (more specific)
+      if (request.method === 'POST' && path.endsWith('/actor/create')) {
         return await this.handleCreateActor(request);
       } else if (request.method === 'POST' && path.endsWith('/actor/update')) {
         return await this.handleUpdate(request);
@@ -51,6 +44,14 @@ export class SessionDO {
         return await this.handleRollTrait(request);
       } else if (request.method === 'GET' && path.endsWith('/actors')) {
         return await this.handleGetActors(request);
+      } else if (request.method === 'POST' && path.endsWith('/create')) {
+        return await this.handleCreate(request);
+      } else if (request.method === 'GET' && path.endsWith('/get')) {
+        return await this.handleGet(request);
+      } else if (request.method === 'POST' && path.endsWith('/update')) {
+        return await this.handleUpdate(request);
+      } else if (request.method === 'POST' && path.endsWith('/end')) {
+        return await this.handleEnd(request);
       } else {
         return new Response('Not Found', { status: 404 });
       }

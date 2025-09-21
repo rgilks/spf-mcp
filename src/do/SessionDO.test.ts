@@ -146,7 +146,7 @@ describe('SessionDO', () => {
   describe('handleGet', () => {
     it('should return session by ID', async () => {
       mockEnv.DB.prepare().bind().first.mockResolvedValue({
-        id: 'test-session',
+        id: '12345678-1234-1234-8234-123456789abc',
         name: 'Test Session',
         status: 'lobby',
       });
@@ -158,7 +158,10 @@ describe('SessionDO', () => {
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('id', 'test-session');
+      expect(result.data).toHaveProperty(
+        'id',
+        '12345678-1234-1234-8234-123456789abc',
+      );
       expect(result.data).toHaveProperty('name', 'Test Session');
       expect(result.data).toHaveProperty('status', 'lobby');
       expect(result).toHaveProperty('serverTs');
@@ -197,19 +200,35 @@ describe('SessionDO', () => {
 
   describe('handleUpdate', () => {
     it('should update session with valid patch', async () => {
-      // Mock the run operation to succeed
-      mockEnv.DB.prepare().bind().run.mockResolvedValue({ success: true });
-      // Mock the first operation to return updated session
-      mockEnv.DB.prepare().bind().first.mockResolvedValue({
-        id: 'test-session',
+      const testSessionId = '12345678-1234-1234-8234-123456789abc';
+      // Create separate mock instances for the two database calls
+      const mockRunResult = { success: true };
+      const mockFirstResult = {
+        id: testSessionId,
         name: 'Updated Session',
-      });
+        status: 'in_progress',
+        round: 1,
+        turn: 2,
+        illumination: 'dim',
+      };
+
+      // Mock the UPDATE query (first prepare call)
+      const mockRunBind = { run: vi.fn().mockResolvedValue(mockRunResult) };
+      // Mock the SELECT query (second prepare call)
+      const mockFirstBind = {
+        first: vi.fn().mockResolvedValue(mockFirstResult),
+      };
+
+      mockEnv.DB.prepare = vi
+        .fn()
+        .mockReturnValueOnce({ bind: vi.fn().mockReturnValue(mockRunBind) })
+        .mockReturnValueOnce({ bind: vi.fn().mockReturnValue(mockFirstBind) });
 
       const request = new Request('http://session/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: testSessionId,
           patch: {
             name: 'Updated Session',
             status: 'in_progress',
@@ -223,8 +242,16 @@ describe('SessionDO', () => {
       const response = await sessionDO.fetch(request);
       const result = (await response.json()) as any;
 
+      // If it's a 500 error, show the error details
+      if (response.status === 500) {
+        throw new Error(
+          `Server error (500): ${JSON.stringify(result, null, 2)}`,
+        );
+      }
+
+      expect(response.status).toBe(200);
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('id', 'test-session');
+      expect(result.data).toHaveProperty('id', testSessionId);
       expect(result).toHaveProperty('serverTs');
 
       expect(mockEnv.DB.prepare).toHaveBeenCalledWith(
@@ -233,19 +260,31 @@ describe('SessionDO', () => {
     });
 
     it('should handle partial updates', async () => {
-      // Mock the run operation to succeed
-      mockEnv.DB.prepare().bind().run.mockResolvedValue({ success: true });
-      // Mock the first operation to return updated session
-      mockEnv.DB.prepare().bind().first.mockResolvedValue({
-        id: 'test-session',
+      const testSessionId = '12345678-1234-1234-8234-123456789abc';
+      // Create separate mock instances for the two database calls
+      const mockRunResult = { success: true };
+      const mockFirstResult = {
+        id: testSessionId,
         name: 'Only Name Updated',
-      });
+      };
+
+      // Mock the UPDATE query (first prepare call)
+      const mockRunBind = { run: vi.fn().mockResolvedValue(mockRunResult) };
+      // Mock the SELECT query (second prepare call)
+      const mockFirstBind = {
+        first: vi.fn().mockResolvedValue(mockFirstResult),
+      };
+
+      mockEnv.DB.prepare = vi
+        .fn()
+        .mockReturnValueOnce({ bind: vi.fn().mockReturnValue(mockRunBind) })
+        .mockReturnValueOnce({ bind: vi.fn().mockReturnValue(mockFirstBind) });
 
       const request = new Request('http://session/update', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: testSessionId,
           patch: {
             name: 'Only Name Updated',
           },
@@ -285,7 +324,7 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           reason: 'Game completed',
         }),
       });
@@ -306,14 +345,18 @@ describe('SessionDO', () => {
 
   describe('handleCreateActor', () => {
     it('should create actor with valid input', async () => {
-      // Mock the run operation to succeed
-      mockEnv.DB.prepare().bind().run.mockResolvedValue({ success: true });
+      // Mock the INSERT operation (only one database call needed)
+      const mockRunResult = { success: true };
+      const mockRunBind = { run: vi.fn().mockResolvedValue(mockRunResult) };
+      mockEnv.DB.prepare = vi
+        .fn()
+        .mockReturnValue({ bind: vi.fn().mockReturnValue(mockRunBind) });
 
       const request = new Request('http://session/actor/create', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           actor: {
             type: 'pc',
             name: 'Test Character',
@@ -356,9 +399,19 @@ describe('SessionDO', () => {
       const response = await sessionDO.fetch(request);
       const result = (await response.json()) as any;
 
+      // If it's a 500 error, show the error details
+      if (response.status === 500) {
+        throw new Error(
+          `CreateActor Server error (500): ${JSON.stringify(result, null, 2)}`,
+        );
+      }
+
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('id');
-      expect(result.data).toHaveProperty('sessionId', 'test-session');
+      expect(result.data).toHaveProperty(
+        'sessionId',
+        '12345678-1234-1234-8234-123456789abc',
+      );
       expect(result.data).toHaveProperty('name', 'Test Character');
       expect(result.data).toHaveProperty('type', 'pc');
       expect(result.data).toHaveProperty('wildCard', true);
@@ -370,14 +423,18 @@ describe('SessionDO', () => {
     });
 
     it('should create NPC actor', async () => {
-      // Mock the run operation to succeed
-      mockEnv.DB.prepare().bind().run.mockResolvedValue({ success: true });
+      // Mock the INSERT operation (only one database call needed)
+      const mockRunResult = { success: true };
+      const mockRunBind = { run: vi.fn().mockResolvedValue(mockRunResult) };
+      mockEnv.DB.prepare = vi
+        .fn()
+        .mockReturnValue({ bind: vi.fn().mockReturnValue(mockRunBind) });
 
       const request = new Request('http://session/actor/create', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           actor: {
             type: 'npc',
             name: 'Goblin Warrior',
@@ -407,13 +464,20 @@ describe('SessionDO', () => {
               armor: 0,
             },
             reach: 1,
-            size: -1,
+            size: 0,
           },
         }),
       });
 
       const response = await sessionDO.fetch(request);
       const result = (await response.json()) as any;
+
+      // If it's a 500 error, show the error details
+      if (response.status === 500) {
+        throw new Error(
+          `CreateNPC Server error (500): ${JSON.stringify(result, null, 2)}`,
+        );
+      }
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('type', 'npc');
@@ -447,7 +511,12 @@ describe('SessionDO', () => {
       mockEnv.DB.prepare()
         .bind()
         .all.mockResolvedValue({
-          results: [{ id: 'actor1', name: 'Test Character' }],
+          results: [
+            {
+              id: '87654321-4321-1234-8234-cba987654321',
+              name: 'Test Character',
+            },
+          ],
         });
       const request = new Request(
         'http://session/actors?sessionId=test-session',
@@ -462,7 +531,10 @@ describe('SessionDO', () => {
       expect(result.success).toBe(true);
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toHaveLength(1);
-      expect(result.data[0]).toHaveProperty('id', 'actor1');
+      expect(result.data[0]).toHaveProperty(
+        'id',
+        '87654321-4321-1234-8234-cba987654321',
+      );
       expect(result.data[0]).toHaveProperty('name', 'Test Character');
       expect(result).toHaveProperty('serverTs');
 
@@ -493,8 +565,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           to: { x: 15, y: 20, facing: 90 },
           reason: 'Player movement',
         }),
@@ -518,8 +590,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           to: { x: 'invalid', y: 20, facing: 90 }, // Invalid x
           reason: 'Player movement',
         }),
@@ -542,8 +614,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           effect: {
             type: 'damage',
             payload: { amount: 8, ap: 2 },
@@ -568,8 +640,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           effect: {
             type: 'healing',
             payload: { amount: 5 },
@@ -589,8 +661,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           effect: {
             type: 'invalid',
             payload: {},
@@ -612,8 +684,8 @@ describe('SessionDO', () => {
       mockEnv.DB.prepare()
         .bind()
         .first.mockResolvedValue({
-          id: 'actor1',
-          sessionId: 'test-session',
+          id: '87654321-4321-1234-8234-cba987654321',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
           skills: JSON.stringify([{ name: 'Fighting', die: 'd6' }]),
           traits: JSON.stringify({ Fighting: 'd6' }),
         });
@@ -622,8 +694,8 @@ describe('SessionDO', () => {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
+          sessionId: '12345678-1234-1234-8234-123456789abc',
+          actorId: '87654321-4321-1234-8234-cba987654321',
           trait: 'Fighting',
           mods: [0],
           rollMode: 'open',
