@@ -1,6 +1,6 @@
 export default {
-  async fetch(request, env, ctx) {
-    return new Response(
+  async fetch() {
+    return new globalThis.Response(
       JSON.stringify({
         status: 'ok',
         message: 'Test worker is running',
