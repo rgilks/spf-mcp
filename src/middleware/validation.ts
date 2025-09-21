@@ -42,6 +42,12 @@ export function validateInput<T>(schema: z.ZodSchema<T>) {
 export function sanitizeInput() {
   return async (c: Context<{ Bindings: Env }>, next: () => Promise<void>) => {
     try {
+      // Only sanitize JSON bodies for POST/PUT requests
+      if (c.req.method === 'GET' || c.req.method === 'DELETE') {
+        await next();
+        return;
+      }
+
       const body = await c.req.json();
 
       // Recursively sanitize strings
