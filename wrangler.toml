@@ -1,0 +1,39 @@
+name = "spf-mcp"
+main = "src/index.ts"
+compatibility_date = "2025-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "spf_db"
+database_id = "<fill-from-wrangler>"
+
+[[kv_namespaces]]
+binding = "SPFKV"
+id = "<fill-from-wrangler>"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "spf-media"
+
+[[durable_objects.bindings]]
+name = "CombatDO"
+class_name = "CombatDO"
+
+[[durable_objects.bindings]]
+name = "DeckDO"
+class_name = "DeckDO"
+
+[[durable_objects.bindings]]
+name = "RngDO"
+class_name = "RngDO"
+
+[[durable_objects.bindings]]
+name = "SessionDO"
+class_name = "SessionDO"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["CombatDO", "DeckDO", "RngDO", "SessionDO"]
+
+[vars]
+MCP_SERVER_NAME = "spf-mcp"

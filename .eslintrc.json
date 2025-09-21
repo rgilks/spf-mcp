@@ -1,0 +1,6 @@
+{
+  "env": { "es2022": true, "worker": true },
+  "extends": ["eslint:recommended"],
+  "parserOptions": { "sourceType": "module", "ecmaVersion": "latest" },
+  "rules": {}
+}

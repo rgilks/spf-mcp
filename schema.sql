@@ -1,0 +1,65 @@
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'lobby',
+    rulesetVersion TEXT,
+    initiativeDeckId TEXT,
+    rngId TEXT,
+    round INTEGER DEFAULT 0,
+    turn INTEGER DEFAULT 0,
+    activeActorId TEXT,
+    gridUnit TEXT,
+    gridScale REAL,
+    cols INTEGER,
+    rows INTEGER,
+    illumination TEXT,
+    createdAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS actors (
+    id TEXT PRIMARY KEY,
+    sessionId TEXT NOT NULL,
+    type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    wildCard INTEGER NOT NULL DEFAULT 1,
+    traits TEXT NOT NULL,
+    skills TEXT NOT NULL,
+    edges TEXT,
+    hindrances TEXT,
+    powers TEXT,
+    resources TEXT NOT NULL,
+    status TEXT NOT NULL,
+    defense TEXT NOT NULL,
+    gear TEXT,
+    position TEXT,
+    reach INTEGER DEFAULT 1,
+    size INTEGER DEFAULT 0,
+    FOREIGN KEY(sessionId) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS deck_states (
+    id TEXT PRIMARY KEY,
+    sessionId TEXT NOT NULL,
+    cards TEXT NOT NULL,
+    discard TEXT NOT NULL,
+    dealt TEXT NOT NULL,
+    lastJokerRound INTEGER DEFAULT -1,
+    updatedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(sessionId) REFERENCES sessions(id)
+);
+
+CREATE TABLE IF NOT EXISTS action_logs (
+    id TEXT PRIMARY KEY,
+    sessionId TEXT NOT NULL,
+    actorId TEXT,
+    ts TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    kind TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    by TEXT NOT NULL,
+    seed TEXT,
+    hash TEXT,
+    FOREIGN KEY(sessionId) REFERENCES sessions(id)
+);
