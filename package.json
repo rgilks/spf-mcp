@@ -8,9 +8,15 @@
     "deploy": "wrangler deploy",
     "check": "tsc -p tsconfig.json --noEmit",
     "format": "prettier -w .",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
-    "test": "vitest",
-    "db:migrate": "wrangler d1 execute spf_db --file ./schema.sql"
+    "lint:fix": "eslint . --fix",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "db:migrate": "wrangler d1 execute spf_db --file ./schema.sql",
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "pre-push": "npm run check && npm run test && npm run format:check"
   },
   "dependencies": {
     "hono": "^4.9.8",
@@ -20,13 +26,26 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241218.0",
+    "@eslint/js": "^9.36.0",
     "@types/node": "^24.5.2",
     "esbuild": "^0.25.10",
     "eslint": "^9.36.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.6",
     "prettier": "^3.6.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.0",
     "vitest": "^3.2.4",
     "wrangler": "^4.38.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
   }
 }

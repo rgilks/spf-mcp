@@ -124,7 +124,7 @@ export class RngDO {
 
   private async handleVerify(request: Request): Promise<Response> {
     const body = await request.json();
-    const { seed, results, wild, modifier, hash } = body;
+    const { seed, results, wild, modifier, hash } = body as any;
 
     if (!seed || !results || !hash) {
       return new Response(

@@ -16,8 +16,8 @@ Object.defineProperty(global, 'crypto', {
 });
 
 // Mock TextEncoder/TextDecoder
-global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder;
+(global as any).TextEncoder = TextEncoder;
+(global as any).TextDecoder = TextDecoder;
 
 // Mock console methods to reduce noise in tests
 global.console = {

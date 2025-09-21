@@ -53,7 +53,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('cards');
@@ -80,7 +80,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data.cards).toHaveLength(52); // 52 cards, no jokers
@@ -117,7 +117,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('dealt');
@@ -138,7 +138,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data.dealt.actor1).toBeDefined();
@@ -179,7 +179,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('recalled');
@@ -197,7 +197,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('No card found for actor');
@@ -222,7 +222,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('cards');
@@ -236,7 +236,7 @@ describe('DeckDO', () => {
       });
 
       const response = await deckDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('No deck initialized');

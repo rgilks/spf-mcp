@@ -35,7 +35,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('formula', '2d6+1');
@@ -59,7 +59,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data.results[0].length).toBeGreaterThanOrEqual(1);
@@ -77,7 +77,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('wild');
@@ -96,7 +96,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Invalid dice formula');
@@ -116,7 +116,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data.seed).toBe(seed);
@@ -138,7 +138,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('valid');
@@ -157,7 +157,7 @@ describe('RngDO', () => {
       });
 
       const response = await rngDO.fetch(request);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('Missing required fields');

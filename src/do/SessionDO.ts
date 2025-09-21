@@ -36,7 +36,7 @@ export class SessionDO {
       } else if (request.method === 'POST' && path.endsWith('/actor/create')) {
         return await this.handleCreateActor(request);
       } else if (request.method === 'POST' && path.endsWith('/actor/update')) {
-        return await this.handleUpdateActor(request);
+        return await this.handleUpdate(request);
       } else if (request.method === 'POST' && path.endsWith('/actor/move')) {
         return await this.handleMoveActor(request);
       } else if (
@@ -261,7 +261,7 @@ export class SessionDO {
 
   private async handleEnd(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, reason } = body;
+    const { sessionId, reason } = body as any;
 
     const now = new Date().toISOString();
 
@@ -379,6 +379,88 @@ export class SessionDO {
       JSON.stringify({
         success: true,
         data: result.results,
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+
+  private async handleMoveActor(request: Request): Promise<Response> {
+    const body = await request.json();
+    const input = MoveActorRequestSchema.parse(body);
+
+    // Update actor position in database
+    await this.env.DB.prepare(
+      `
+      UPDATE actors SET position = ?, updatedAt = ? WHERE id = ? AND sessionId = ?
+      `,
+    )
+      .bind(
+        JSON.stringify(input.to),
+        new Date().toISOString(),
+        input.actorId,
+        input.sessionId,
+      )
+      .run();
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: { moved: true, reason: input.reason },
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+
+  private async handleApplyEffect(request: Request): Promise<Response> {
+    const body = await request.json();
+    const input = ApplyEffectRequestSchema.parse(body);
+
+    // For now, just return success - actual effect application would be implemented
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: { effectApplied: true, effect: input.effect },
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+
+  private async handleRollTrait(request: Request): Promise<Response> {
+    const body = await request.json();
+    const input = RollTraitRequestSchema.parse(body);
+
+    // Get RNG DO and roll dice
+    const rngDO = this.env.RngDO.get(
+      this.env.RngDO.idFromName(`rng-${input.sessionId}`),
+    );
+
+    const response = await rngDO.fetch(
+      new Request('http://rng/roll', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          formula: '1d6', // Default trait die - would be determined by trait
+          explode: true,
+          wildDie: null,
+        }),
+      }),
+    );
+
+    const result = await response.json();
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: result.data,
         serverTs: new Date().toISOString(),
       }),
       {

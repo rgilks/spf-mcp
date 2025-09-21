@@ -353,3 +353,19 @@ export const AreaTemplateResponseSchema = z.object({
   coveredCells: z.array(PositionSchema),
   explanation: z.string(),
 });
+
+// Type exports
+export type Position = z.infer<typeof PositionSchema>;
+export type Skill = z.infer<typeof SkillSchema>;
+export type Power = z.infer<typeof PowerSchema>;
+export type Resources = z.infer<typeof ResourcesSchema>;
+export type ActorStatus = z.infer<typeof ActorStatusSchema>;
+export type Defense = z.infer<typeof DefenseSchema>;
+export type Gear = z.infer<typeof GearSchema>;
+export type InitiativeCard = z.infer<typeof InitiativeCardSchema>;
+export type Session = z.infer<typeof SessionSchema>;
+export type Actor = z.infer<typeof ActorSchema>;
+export type DeckState = z.infer<typeof DeckStateSchema>;
+export type ActionLog = z.infer<typeof ActionLogSchema>;
+export type CombatState = z.infer<typeof CombatStateResponseSchema>;
+export type DiceRoll = z.infer<typeof DiceRollResponseSchema>;

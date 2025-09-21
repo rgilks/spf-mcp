@@ -11,6 +11,8 @@ alwaysApply: true
 - NEVER run tests in watch mode (e.g., `npm test -- --watch`, `vitest --watch`, `vitest -w`)
 - Always run tests in single-run mode (e.g., `npm test`, `vitest run`)
 - Watch mode requires manual intervention to stop and can block the terminal
+- Use `npm test` for running tests (single-run mode)
+- Use `npm run test:coverage` for coverage reports
 
 ## Code Style
 
@@ -39,6 +41,9 @@ alwaysApply: true
 - Keep commits focused on single changes
 - Use conventional commit format when possible
 - Test before committing
+- Pre-commit hooks will automatically run linting and formatting
+- Pre-push hooks will run TypeScript checks, tests, and format validation
+- NEVER run tests in watch mode in any Git hooks or CI/CD
 
 ## Documentation
 
@@ -46,4 +51,3 @@ alwaysApply: true
 - Document any new MCP tools or endpoints
 - Include examples for complex functionality
 - Maintain the spec.md as the source of truth
-

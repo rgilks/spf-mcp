@@ -112,7 +112,7 @@ describe('Integration Tests', () => {
     it('should return valid MCP manifest', async () => {
       const request = new Request('http://localhost/mcp/manifest');
       const response = await app.fetch(request, mockEnv);
-      const manifest = await response.json();
+      const manifest = (await response.json()) as any;
 
       expect(manifest.name).toBe('spf-mcp-test');
       expect(manifest.protocol).toBe('mcp-1');
@@ -141,7 +141,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('formula', '2d6');
@@ -158,7 +158,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('sessionId required');
@@ -183,7 +183,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('sessionId');
@@ -192,7 +192,7 @@ describe('Integration Tests', () => {
     it('should load an existing session', async () => {
       const request = new Request('http://localhost/mcp/session/test-session');
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('id', 'test-session');
@@ -220,7 +220,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('id');
@@ -240,7 +240,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('status', 'idle');
@@ -258,7 +258,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('dealt');
@@ -274,7 +274,7 @@ describe('Integration Tests', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();

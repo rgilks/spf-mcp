@@ -43,12 +43,12 @@ export class DeckDO {
 
   private async handleReset(request: Request): Promise<Response> {
     const body = await request.json();
-    const { useJokers = true } = body;
+    const { useJokers = true } = body as any;
 
     const deck = this.createStandardDeck(useJokers);
     const deckState: DeckState = {
       id: uuidv4(),
-      sessionId: body.sessionId || 'system',
+      sessionId: (body as any).sessionId || 'system',
       cards: deck,
       discard: [],
       dealt: {},
@@ -72,7 +72,7 @@ export class DeckDO {
 
   private async handleDeal(request: Request): Promise<Response> {
     const body = await request.json();
-    const { to, extra = {} } = body;
+    const { to, extra = {} } = body as any;
 
     const deckState = await this.getDeckState();
     if (!deckState) {
@@ -133,7 +133,7 @@ export class DeckDO {
 
   private async handleRecall(request: Request): Promise<Response> {
     const body = await request.json();
-    const { actorId } = body;
+    const { actorId } = body as any;
 
     const deckState = await this.getDeckState();
     if (!deckState) {

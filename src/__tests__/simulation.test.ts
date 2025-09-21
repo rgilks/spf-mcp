@@ -221,7 +221,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const sessionResponse = await app.fetch(createSessionRequest, mockEnv);
-    const sessionResult = await sessionResponse.json();
+    const sessionResult = (await sessionResponse.json()) as any;
     expect(sessionResult.success).toBe(true);
     const sessionId = sessionResult.data.sessionId;
 
@@ -265,7 +265,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const valerosResponse = await app.fetch(createValerosRequest, mockEnv);
-    const valerosResult = await valerosResponse.json();
+    const valerosResult = (await valerosResponse.json()) as any;
     expect(valerosResult.success).toBe(true);
     const valerosId = valerosResult.data.id;
 
@@ -307,7 +307,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const seoniResponse = await app.fetch(createSeoniRequest, mockEnv);
-    const seoniResult = await seoniResponse.json();
+    const seoniResult = (await seoniResponse.json()) as any;
     expect(seoniResult.success).toBe(true);
     const seoniId = seoniResult.data.id;
 
@@ -347,7 +347,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const goblin1Response = await app.fetch(createGoblin1Request, mockEnv);
-    const goblin1Result = await goblin1Response.json();
+    const goblin1Result = (await goblin1Response.json()) as any;
     expect(goblin1Result.success).toBe(true);
     const goblin1Id = goblin1Result.data.id;
 
@@ -365,7 +365,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const combatResponse = await app.fetch(startCombatRequest, mockEnv);
-    const combatResult = await combatResponse.json();
+    const combatResult = (await combatResponse.json()) as any;
     expect(combatResult.success).toBe(true);
 
     // Step 5: Deal initiative cards
@@ -382,7 +382,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const initiativeResponse = await app.fetch(dealInitiativeRequest, mockEnv);
-    const initiativeResult = await initiativeResponse.json();
+    const initiativeResult = (await initiativeResponse.json()) as any;
     expect(initiativeResult.success).toBe(true);
     expect(initiativeResult.data.dealt).toBeDefined();
 
@@ -402,7 +402,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const attackResponse = await app.fetch(valerosAttackRequest, mockEnv);
-    const attackResult = await attackResponse.json();
+    const attackResult = (await attackResponse.json()) as any;
     expect(attackResult.success).toBe(true);
     expect(attackResult.data.total).toBeGreaterThan(0);
 
@@ -424,7 +424,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const damageResponse = await app.fetch(applyDamageRequest, mockEnv);
-    const damageResult = await damageResponse.json();
+    const damageResult = (await damageResponse.json()) as any;
     expect(damageResult.success).toBe(true);
 
     // Step 8: Advance to next turn (Seoni)
@@ -440,7 +440,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const advanceResponse = await app.fetch(advanceTurnRequest, mockEnv);
-    const advanceResult = await advanceResponse.json();
+    const advanceResult = (await advanceResponse.json()) as any;
     expect(advanceResult.success).toBe(true);
     expect(advanceResult.data.activeActorId).toBe(seoniId);
 
@@ -460,7 +460,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const spellResponse = await app.fetch(seoniSpellRequest, mockEnv);
-    const spellResult = await spellResponse.json();
+    const spellResult = (await spellResponse.json()) as any;
     expect(spellResult.success).toBe(true);
 
     // Step 10: Apply spell effect (Bolt damage)
@@ -481,7 +481,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const spellDamageResponse = await app.fetch(spellDamageRequest, mockEnv);
-    const spellDamageResult = await spellDamageResponse.json();
+    const spellDamageResult = (await spellDamageResponse.json()) as any;
     expect(spellDamageResult.success).toBe(true);
 
     // Step 11: End the round
@@ -497,7 +497,7 @@ describe('Full Combat Simulation', () => {
     );
 
     const endRoundResponse = await app.fetch(endRoundRequest, mockEnv);
-    const endRoundResult = await endRoundResponse.json();
+    const endRoundResult = (await endRoundResponse.json()) as any;
     expect(endRoundResult.success).toBe(true);
 
     // Verify the simulation completed successfully
@@ -529,7 +529,7 @@ describe('Full Combat Simulation', () => {
       });
 
       const response = await app.fetch(request, mockEnv);
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
       expect(typeof result.data.total).toBe(testCase.expectedType);

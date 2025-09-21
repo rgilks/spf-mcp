@@ -49,7 +49,7 @@ export class CombatDO {
 
   private async handleStart(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, participants, options = {} } = body;
+    const { sessionId, participants, options = {} } = body as any;
 
     const combatState: CombatState = {
       sessionId,
@@ -77,7 +77,7 @@ export class CombatDO {
 
   private async handleDeal(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, extraDraws = {} } = body;
+    const { sessionId, extraDraws = {} } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -149,7 +149,7 @@ export class CombatDO {
 
   private async handleHold(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, actorId } = body;
+    const { sessionId, actorId } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -193,7 +193,7 @@ export class CombatDO {
 
   private async handleInterrupt(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, actorId, targetActorId } = body;
+    const { sessionId, actorId, targetActorId } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -237,7 +237,7 @@ export class CombatDO {
 
   private async handleAdvanceTurn(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId } = body;
+    const { sessionId } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -292,7 +292,7 @@ export class CombatDO {
     const currentIndex = sortedParticipants.indexOf(
       combatState.activeActorId || '',
     );
-    let nextIndex = currentIndex + 1;
+    const nextIndex = currentIndex + 1;
 
     // If we've gone through all actors, check for hold
     if (nextIndex >= sortedParticipants.length) {
@@ -329,7 +329,7 @@ export class CombatDO {
 
   private async handleEndRound(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId } = body;
+    const { sessionId } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -458,6 +458,6 @@ export class CombatDO {
 
   private async getCombatState(): Promise<CombatState | null> {
     const stored = await this.state.storage.get('combatState');
-    return stored || null;
+    return (stored as CombatState) || null;
   }
 }
