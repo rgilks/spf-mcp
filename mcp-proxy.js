@@ -7,6 +7,8 @@
 
 const SERVER_URL =
   process.env.SPF_SERVER_URL || 'https://spf-mcp.rob-gilks.workers.dev';
+const API_KEY = process.env.API_KEY || 'your-api-key-for-mcp-clients';
+const JWT_TOKEN = process.env.JWT_TOKEN || null;
 
 // Simple JSON-RPC handler
 process.stdin.setEncoding('utf8');
@@ -29,11 +31,51 @@ process.stdin.on('data', (chunk) => {
   }
 });
 
+// Generate JWT token if not provided
+async function getAuthToken() {
+  if (JWT_TOKEN) {
+    return JWT_TOKEN;
+  }
+
+  try {
+    const response = await fetch(`${SERVER_URL}/auth/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        role: 'gm',
+        apiKey: API_KEY,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Auth failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.success) {
+      throw new Error(`Auth failed: ${data.error}`);
+    }
+
+    console.error('🔑 Generated new JWT token for MCP client');
+    return data.data.token;
+  } catch (error) {
+    console.error('❌ Failed to generate auth token:', error.message);
+    throw error;
+  }
+}
+
 async function makeRequest(endpoint, options = {}) {
   const url = `${SERVER_URL}${endpoint}`;
+
+  // Get auth token
+  const token = await getAuthToken();
+
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
       ...options.headers,
     },
     ...options,

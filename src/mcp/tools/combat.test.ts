@@ -85,12 +85,12 @@ describe('Combat MCP Tools', () => {
 
       const mockCombatDO = {
         fetch: vi.fn().mockResolvedValue(
-          createMockDOResponse(
-            {
+          new Response(
+            JSON.stringify({
+              success: false,
               error: 'Combat start failed',
-            },
-            false,
-            500,
+            }),
+            { status: 500 },
           ),
         ),
       };
@@ -447,12 +447,12 @@ describe('Combat MCP Tools', () => {
 
       const mockCombatDO = {
         fetch: vi.fn().mockResolvedValue(
-          createMockDOResponse(
-            {
+          new Response(
+            JSON.stringify({
+              success: false,
               error: 'Combat not started',
-            },
-            false,
-            404,
+            }),
+            { status: 404 },
           ),
         ),
       };

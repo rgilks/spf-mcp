@@ -37,3 +37,5 @@ new_sqlite_classes = ["CombatDO", "DeckDO", "RngDO", "SessionDO"]
 
 [vars]
 MCP_SERVER_NAME = "spf-mcp"
+JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
+API_KEY = "your-api-key-for-mcp-clients"

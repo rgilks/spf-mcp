@@ -2,9 +2,20 @@
 
 This guide will help you integrate the Savage Pathfinder MCP server with Cursor so you can interact with the tabletop gaming system directly from the AI chat.
 
+## 🔒 **SECURITY NOTICE**
+
+**The MCP server now requires authentication!** You must obtain an API key and configure authentication before using the server.
+
 ## 🚀 Quick Setup
 
-### Step 1: Configure Cursor MCP Settings
+### Step 1: Get API Access
+
+Contact the server administrator to obtain:
+
+- **API Key**: For authenticating MCP clients
+- **JWT Secret**: For token generation (if running locally)
+
+### Step 2: Configure Cursor MCP Settings
 
 1. Open Cursor
 2. Go to **Settings** → **Features** → **MCP**
@@ -17,18 +28,20 @@ This guide will help you integrate the Savage Pathfinder MCP server with Cursor 
       "command": "node",
       "args": ["/Users/robertgilks/Source/spf-mcp/mcp-proxy.js"],
       "env": {
-        "SPF_SERVER_URL": "https://spf-mcp.rob-gilks.workers.dev"
+        "SPF_SERVER_URL": "https://spf-mcp.rob-gilks.workers.dev",
+        "API_KEY": "your-api-key-here",
+        "JWT_TOKEN": "optional-pre-generated-token"
       }
     }
   }
 }
 ```
 
-### Step 2: Restart Cursor
+### Step 3: Restart Cursor
 
 After adding the configuration, restart Cursor to load the MCP server.
 
-### Step 3: Test the Integration
+### Step 4: Test the Integration
 
 Once Cursor restarts, you should be able to use the Savage Pathfinder tools directly in chat. Try asking:
 

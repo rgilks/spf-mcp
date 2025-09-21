@@ -116,12 +116,12 @@ describe('Session MCP Tools', () => {
 
       const mockSessionDO = {
         fetch: vi.fn().mockResolvedValue(
-          createMockDOResponse(
-            {
+          new Response(
+            JSON.stringify({
+              success: false,
               error: 'Session not found',
-            },
-            false,
-            404,
+            }),
+            { status: 404 },
           ),
         ),
       };

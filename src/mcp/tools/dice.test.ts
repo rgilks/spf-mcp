@@ -81,11 +81,15 @@ describe('Dice MCP Tools', () => {
       mockCtx.req.header.mockReturnValue(testSessionId);
 
       const mockRngDO = {
-        fetch: vi
-          .fn()
-          .mockResolvedValue(
-            createMockDOResponse('RNG service unavailable', false, 500),
+        fetch: vi.fn().mockResolvedValue(
+          new Response(
+            JSON.stringify({
+              success: false,
+              error: 'RNG service unavailable',
+            }),
+            { status: 500 },
           ),
+        ),
       };
       mockCtx.env.RngDO.get.mockReturnValue(mockRngDO);
 

@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import app from './index';
+import { createTestToken, createTestHeaders } from './test-utils';
 
 // Mock environment
 const mockEnv = {
@@ -126,6 +127,8 @@ const mockEnv = {
     idFromName: vi.fn(),
   },
   MCP_SERVER_NAME: 'spf-mcp-test',
+  JWT_SECRET: 'test-secret',
+  API_KEY: 'test-api-key',
 };
 
 describe('Integration Tests', () => {
