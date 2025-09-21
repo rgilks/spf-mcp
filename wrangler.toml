@@ -5,11 +5,11 @@ compatibility_date = "2025-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "spf_db"
-database_id = "<fill-from-wrangler>"
+database_id = "cf149b95-de59-482d-82ba-4b9a8a356acf"
 
 [[kv_namespaces]]
 binding = "SPFKV"
-id = "<fill-from-wrangler>"
+id = "242e0dff16b64732bef9624b08fcffb0"
 
 [[r2_buckets]]
 binding = "R2"
@@ -33,7 +33,7 @@ class_name = "SessionDO"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["CombatDO", "DeckDO", "RngDO", "SessionDO"]
+new_sqlite_classes = ["CombatDO", "DeckDO", "RngDO", "SessionDO"]
 
 [vars]
 MCP_SERVER_NAME = "spf-mcp"
