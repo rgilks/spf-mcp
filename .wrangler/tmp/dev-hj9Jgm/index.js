@@ -20355,29 +20355,50 @@ var combatRateLimit = rateLimit({
   // 30 combat actions per minute
 });
 
-// src/middleware/security-headers.ts
-function securityHeaders() {
+// src/middleware/validation.ts
+function sanitizeInput() {
   return async (c, next) => {
-    c.header('X-Content-Type-Options', 'nosniff');
-    c.header('X-Frame-Options', 'DENY');
-    c.header('X-XSS-Protection', '1; mode=block');
-    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
-    c.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
-    const protocol = c.req.header('x-forwarded-proto') || 'http';
-    if (protocol === 'https') {
-      c.header(
-        'Strict-Transport-Security',
-        'max-age=31536000; includeSubDomains; preload',
-      );
+    try {
+      if (c.req.method === 'GET' || c.req.method === 'DELETE') {
+        await next();
+        return;
+      }
+      const contentType = c.req.header('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        await next();
+        return;
+      }
+      const body = await c.req.json();
+      const sanitize = /* @__PURE__ */ __name((obj) => {
+        if (typeof obj === 'string') {
+          return obj
+            .replace(/[<>]/g, '')
+            .replace(/javascript:/gi, '')
+            .replace(/on\w+=/gi, '')
+            .trim();
+        }
+        if (Array.isArray(obj)) {
+          return obj.map(sanitize);
+        }
+        if (obj && typeof obj === 'object') {
+          const sanitized = {};
+          for (const [key, value] of Object.entries(obj)) {
+            sanitized[key] = sanitize(value);
+          }
+          return sanitized;
+        }
+        return obj;
+      }, 'sanitize');
+      const sanitizedBody = sanitize(body);
+      c.set('sanitizedData', sanitizedBody);
+      await next();
+    } catch (error45) {
+      console.error('Input sanitization error:', error45);
+      await next();
     }
-    c.header(
-      'Content-Security-Policy',
-      "default-src 'self'; connect-src 'self' https:;",
-    );
-    await next();
   };
 }
-__name(securityHeaders, 'securityHeaders');
+__name(sanitizeInput, 'sanitizeInput');
 
 // src/do/CombatDO.ts
 var CombatDO = class {
@@ -21995,14 +22016,36 @@ var SessionDO = class {
 
 // src/index.ts
 var app = new Hono2();
-app.use('*', securityHeaders);
 app.use('*', secureCors);
+app.use('*', sanitizeInput);
 app.get('/healthz', async (c) => {
-  return c.json({
-    status: 'healthy',
-    timestamp: /* @__PURE__ */ new Date().toISOString(),
-    message: 'Security improvements deployed successfully!',
-  });
+  try {
+    const dbCheck = await c.env.DB.prepare('SELECT 1').first();
+    if (!dbCheck) {
+      return c.json(
+        { status: 'unhealthy', error: 'Database connection failed' },
+        503,
+      );
+    }
+    return c.json({
+      status: 'healthy',
+      timestamp: /* @__PURE__ */ new Date().toISOString(),
+      services: {
+        database: 'ok',
+        durableObjects: 'ok',
+      },
+      security: 'enhanced',
+    });
+  } catch (error45) {
+    return c.json(
+      {
+        status: 'unhealthy',
+        error: error45 instanceof Error ? error45.message : 'Unknown error',
+        timestamp: /* @__PURE__ */ new Date().toISOString(),
+      },
+      503,
+    );
+  }
 });
 app.get('/readyz', (c) =>
   c.json({
