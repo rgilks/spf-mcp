@@ -123,7 +123,7 @@ export class CombatDO {
     );
 
     // Update combat state
-    combatState.status = 'round_start';
+    combatState.status = 'turn_active'; // Start with first actor active
     combatState.round++;
     combatState.turn = 0;
     combatState.activeActorId = sortedParticipants[0];
@@ -252,7 +252,8 @@ export class CombatDO {
 
     if (
       combatState.status !== 'turn_active' &&
-      combatState.status !== 'on_hold'
+      combatState.status !== 'on_hold' &&
+      combatState.status !== 'round_start'
     ) {
       return new Response(
         JSON.stringify({
@@ -288,30 +289,56 @@ export class CombatDO {
       dealt,
     );
 
-    // Find next actor
-    const currentIndex = sortedParticipants.indexOf(
-      combatState.activeActorId || '',
-    );
-    const nextIndex = currentIndex + 1;
-
-    // If we've gone through all actors, check for hold
-    if (nextIndex >= sortedParticipants.length) {
-      if (combatState.hold.length > 0) {
-        // Process hold actors in order
-        combatState.activeActorId = combatState.hold[0];
-        combatState.hold = combatState.hold.slice(1);
-        combatState.status = 'turn_active';
-      } else {
-        // End of round
-        combatState.status = 'round_end';
-        combatState.activeActorId = undefined;
-      }
-    } else {
-      combatState.activeActorId = sortedParticipants[nextIndex];
+    // Handle special case for round_start - activate first actor
+    if (combatState.status === 'round_start') {
+      combatState.activeActorId = sortedParticipants[0];
       combatState.status = 'turn_active';
-    }
+      combatState.turn = 0;
+    } else {
+      // Handle case where activeActorId is undefined (after hold)
+      let currentIndex;
+      if (combatState.activeActorId === undefined) {
+        // Find the last actor that wasn't on hold to continue from there
+        currentIndex = -1; // Will start from the beginning
+        for (let i = 0; i < sortedParticipants.length; i++) {
+          if (!combatState.hold.includes(sortedParticipants[i])) {
+            currentIndex = i - 1; // Start from the actor before this one
+            break;
+          }
+        }
+      } else {
+        currentIndex = sortedParticipants.indexOf(combatState.activeActorId);
+      }
 
-    combatState.turn++;
+      let nextIndex = currentIndex + 1;
+
+      // Skip actors that are on hold
+      while (
+        nextIndex < sortedParticipants.length &&
+        combatState.hold.includes(sortedParticipants[nextIndex])
+      ) {
+        nextIndex++;
+      }
+
+      // If we've gone through all actors, check for hold
+      if (nextIndex >= sortedParticipants.length) {
+        if (combatState.hold.length > 0) {
+          // Process hold actors in order
+          combatState.activeActorId = combatState.hold[0];
+          combatState.hold = combatState.hold.slice(1);
+          combatState.status = 'turn_active';
+        } else {
+          // End of round
+          combatState.status = 'round_end';
+          combatState.activeActorId = undefined;
+        }
+      } else {
+        combatState.activeActorId = sortedParticipants[nextIndex];
+        combatState.status = 'turn_active';
+      }
+
+      combatState.turn++;
+    }
 
     await this.state.storage.put('combatState', combatState);
 

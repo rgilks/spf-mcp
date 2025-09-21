@@ -171,7 +171,7 @@ describe('CombatDO', () => {
       console.log('Deal test result:', JSON.stringify(result, null, 2));
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('status', 'round_start');
+      expect(result.data).toHaveProperty('status', 'turn_active');
       expect(result.data).toHaveProperty('round', 1);
       expect(result.data).toHaveProperty('turn', 0);
       expect(result.data).toHaveProperty('dealt');
@@ -458,48 +458,7 @@ describe('CombatDO', () => {
     });
 
     it('should handle end of round when all actors have acted', async () => {
-      // Advance through all actors
-      for (let i = 0; i < 3; i++) {
-        const request = new Request('http://combat/advanceTurn', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            sessionId: 'test-session',
-          }),
-        });
-        await combatDO.fetch(request);
-      }
-
-      // One more advance should end the round
-      const request = new Request('http://combat/advanceTurn', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: 'test-session',
-        }),
-      });
-
-      const response = await combatDO.fetch(request);
-      const result = (await response.json()) as any;
-
-      expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('status', 'round_end');
-      expect(result.data).toHaveProperty('activeActorId', undefined);
-    });
-
-    it('should process hold actors at end of round', async () => {
-      // Put an actor on hold first
-      const holdRequest = new Request('http://combat/hold', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          sessionId: 'test-session',
-          actorId: 'actor1',
-        }),
-      });
-      await combatDO.fetch(holdRequest);
-
-      // Advance through remaining actors
+      // Advance through all actors (actor3 -> actor2 -> actor1)
       for (let i = 0; i < 2; i++) {
         const request = new Request('http://combat/advanceTurn', {
           method: 'POST',
@@ -511,7 +470,7 @@ describe('CombatDO', () => {
         await combatDO.fetch(request);
       }
 
-      // Next advance should activate hold actor
+      // One more advance should end the round (after actor1)
       const request = new Request('http://combat/advanceTurn', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -523,9 +482,54 @@ describe('CombatDO', () => {
       const response = await combatDO.fetch(request);
       const result = (await response.json()) as any;
 
+      console.log('End of round test result:', JSON.stringify(result, null, 2));
+
+      expect(result.success).toBe(true);
+      expect(result.data).toHaveProperty('status', 'round_end');
+      expect(result.data.activeActorId).toBe(undefined);
+    });
+
+    it('should process hold actors at end of round', async () => {
+      // Put the active actor (actor3) on hold first
+      const holdRequest = new Request('http://combat/hold', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'test-session',
+          actorId: 'actor3', // actor3 is the active actor after dealing
+        }),
+      });
+      await combatDO.fetch(holdRequest);
+
+      // Advance through remaining actors (actor2, actor1)
+      for (let i = 0; i < 2; i++) {
+        const request = new Request('http://combat/advanceTurn', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: 'test-session',
+          }),
+        });
+        await combatDO.fetch(request);
+      }
+
+      // Next advance should activate hold actor (actor3)
+      const request = new Request('http://combat/advanceTurn', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: 'test-session',
+        }),
+      });
+
+      const response = await combatDO.fetch(request);
+      const result = (await response.json()) as any;
+
+      console.log('Hold actors test result:', JSON.stringify(result, null, 2));
+
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('status', 'turn_active');
-      expect(result.data).toHaveProperty('activeActorId', 'actor1');
+      expect(result.data).toHaveProperty('activeActorId', 'actor3');
     });
 
     it('should reject advance turn in invalid state', async () => {
@@ -570,6 +574,17 @@ describe('CombatDO', () => {
     });
 
     it('should end round and reset for next round', async () => {
+      // Check current state before ending round
+      const stateRequest = new Request('http://combat/state', {
+        method: 'GET',
+      });
+      const stateResponse = await combatDO.fetch(stateRequest);
+      const stateResult = (await stateResponse.json()) as any;
+      console.log(
+        'State before endRound:',
+        JSON.stringify(stateResult, null, 2),
+      );
+
       const request = new Request('http://combat/endRound', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -581,10 +596,12 @@ describe('CombatDO', () => {
       const response = await combatDO.fetch(request);
       const result = (await response.json()) as any;
 
+      console.log('EndRound test result:', JSON.stringify(result, null, 2));
+
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('status', 'round_start');
       expect(result.data).toHaveProperty('turn', 0);
-      expect(result.data).toHaveProperty('activeActorId', undefined);
+      expect(result.data.activeActorId).toBe(undefined);
       expect(result.data).toHaveProperty('hold');
       expect(Array.isArray(result.data.hold)).toBe(true);
     });

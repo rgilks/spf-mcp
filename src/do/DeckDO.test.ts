@@ -1,13 +1,29 @@
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
 import { DeckDO } from './DeckDO';
 
+// Mock storage that actually stores data
+const mockStorage = new Map<string, any>();
+
 // Mock DurableObjectState
 const mockState = {
   storage: {
-    put: vi.fn(),
-    get: vi.fn().mockResolvedValue(null), // Start with no stored state
-    delete: vi.fn(),
-    list: vi.fn(),
+    put: vi.fn().mockImplementation(async (key, value) => {
+      console.log('Mock storage put called with key:', key, 'value:', value);
+      mockStorage.set(key, value);
+    }),
+    get: vi.fn().mockImplementation(async (key) => {
+      console.log(
+        'Mock storage get called with key:',
+        key,
+        'returning:',
+        mockStorage.get(key),
+      );
+      return mockStorage.get(key) || null;
+    }),
+    delete: vi.fn().mockImplementation(async (key) => {
+      mockStorage.delete(key);
+    }),
+    list: vi.fn().mockResolvedValue([]),
   },
 };
 
@@ -16,29 +32,14 @@ const mockEnv = {};
 
 describe('DeckDO', () => {
   let deckDO: DeckDO;
-  let storedState: any = null;
 
   beforeAll(() => {
-    // Mock storage to actually store and retrieve state
-    mockState.storage.put = vi.fn().mockImplementation(async (key, value) => {
-      if (key === 'deckState') {
-        storedState = value;
-      }
-    });
-
-    mockState.storage.get = vi.fn().mockImplementation(async (key) => {
-      if (key === 'deckState') {
-        return storedState;
-      }
-      return null;
-    });
-
     deckDO = new DeckDO(mockState as any, mockEnv);
   });
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    // Don't reset storedState here - let it persist between tests
+    // Clear mock storage before each test
+    mockStorage.clear();
   });
 
   describe('handleReset', () => {
@@ -165,10 +166,44 @@ describe('DeckDO', () => {
           sessionId: 'test-session',
         }),
       });
-      await deckDO.fetch(resetRequest);
+      const resetResponse = await deckDO.fetch(resetRequest);
+      const resetResult = (await resetResponse.json()) as any;
+
+      if (!resetResult.success) {
+        throw new Error(
+          `Reset failed: ${JSON.stringify(resetResult, null, 2)}`,
+        );
+      }
     });
 
     it('should deal cards to participants', async () => {
+      // Create a fresh DeckDO instance for this test
+      const freshDeckDO = new DeckDO(mockState as any, mockEnv);
+
+      // Reset deck first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      const resetResponse = await freshDeckDO.fetch(resetRequest);
+      const resetResult = (await resetResponse.json()) as any;
+
+      if (!resetResult.success) {
+        throw new Error(
+          `Reset failed: ${JSON.stringify(resetResult, null, 2)}`,
+        );
+      }
+
+      // Check what's in the mock storage
+      const storedData = mockStorage.get('deckState');
+      if (!storedData) {
+        throw new Error('No data stored in mock storage after reset');
+      }
+
       const request = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -178,9 +213,12 @@ describe('DeckDO', () => {
         }),
       });
 
-      const response = await deckDO.fetch(request);
+      const response = await freshDeckDO.fetch(request);
       const result = (await response.json()) as any;
 
+      if (!result.success) {
+        throw new Error(`Deal failed: ${JSON.stringify(result, null, 2)}`);
+      }
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('dealt');
       expect(result.data.dealt).toHaveProperty('actor1');
