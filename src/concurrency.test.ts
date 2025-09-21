@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { CombatDO } from '../do/CombatDO';
-import { DeckDO } from '../do/DeckDO';
-import { RngDO } from '../do/RngDO';
+import { CombatDO } from './do/CombatDO';
+import { DeckDO } from './do/DeckDO';
+import { RngDO } from './do/RngDO';
 
 // Mock DurableObjectState
 const mockState = {
@@ -83,17 +83,17 @@ describe('Concurrency Tests', () => {
 
       // All requests should succeed
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
       // Verify that only one actor is active at a time
       const activeActors = results
-        .map((r) => r.data.activeActorId)
-        .filter((id) => id !== undefined);
+        .map((r: any) => r.data.activeActorId)
+        .filter((id: any) => id !== undefined);
 
       // Should have at most one active actor per response
       expect(activeActors.length).toBeLessThanOrEqual(5);
@@ -146,12 +146,12 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // One should succeed, one should fail (only active actor can hold)
-      const successCount = results.filter((r) => r.success).length;
-      const failureCount = results.filter((r) => !r.success).length;
+      const successCount = results.filter((r: any) => r.success).length;
+      const failureCount = results.filter((r: any) => !r.success).length;
 
       expect(successCount).toBe(1);
       expect(failureCount).toBe(1);
@@ -209,11 +209,11 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // Only one interrupt should succeed
-      const successCount = results.filter((r) => r.success).length;
+      const successCount = results.filter((r: any) => r.success).length;
       expect(successCount).toBe(1);
     });
   });
@@ -273,16 +273,18 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All requests should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
       // Verify that all actors got different cards
-      const allDealtCards = results.flatMap((r) => Object.values(r.data.dealt));
+      const allDealtCards = results.flatMap((r: any) =>
+        Object.values(r.data.dealt),
+      );
       const uniqueCards = new Set(allDealtCards.map((card: any) => card.id));
       expect(uniqueCards.size).toBe(5);
     });
@@ -332,12 +334,12 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // One should succeed, one should fail (actor can only have one card)
-      const successCount = results.filter((r) => r.success).length;
-      const failureCount = results.filter((r) => !r.success).length;
+      const successCount = results.filter((r: any) => r.success).length;
+      const failureCount = results.filter((r: any) => !r.success).length;
 
       expect(successCount).toBe(1);
       expect(failureCount).toBe(1);
@@ -373,18 +375,18 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All requests should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
         expect(result.data.total).toBeGreaterThanOrEqual(1);
         expect(result.data.total).toBeLessThanOrEqual(6);
       });
 
       // Results should be different (high probability)
-      const totals = results.map((r) => r.data.total);
+      const totals = results.map((r: any) => r.data.total);
       const uniqueTotals = new Set(totals);
       expect(uniqueTotals.size).toBeGreaterThan(1);
     });
@@ -426,11 +428,11 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All requests should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
         expect(result.data).toHaveProperty('valid');
       });
@@ -523,11 +525,11 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All operations should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
     });
@@ -592,16 +594,16 @@ describe('Concurrency Tests', () => {
       );
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All requests should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
       // Verify that turn progression is consistent
-      const turns = results.map((r) => r.data.turn);
+      const turns = results.map((r: any) => r.data.turn);
       const uniqueTurns = new Set(turns);
       expect(uniqueTurns.size).toBeGreaterThan(1); // Should have progressed through turns
     });

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
-import { DeckDO } from '../DeckDO';
+import { DeckDO } from './DeckDO';
 
 // Mock DurableObjectState
 const mockState = {

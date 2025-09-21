@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import app from '../index';
+import app from './index';
 
 // Mock environment with realistic responses
 const createMockEnv = () => ({

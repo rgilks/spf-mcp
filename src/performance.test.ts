@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RngDO } from '../do/RngDO';
-import { DeckDO } from '../do/DeckDO';
-import { CombatDO } from '../do/CombatDO';
+import { RngDO } from './do/RngDO';
+import { DeckDO } from './do/DeckDO';
+import { CombatDO } from './do/CombatDO';
 
 // Mock DurableObjectState
 const mockState = {
@@ -46,11 +46,11 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
       // All rolls should succeed
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
@@ -91,10 +91,10 @@ describe('Performance Tests', () => {
 
         const responses = await Promise.all(rollPromises);
         const results = await Promise.all(
-          responses.map((response) => response.json()),
+          responses.map((response: Response) => response.json()),
         );
 
-        results.forEach((result) => {
+        results.forEach((result: any) => {
           expect(result.success).toBe(true);
         });
       }
@@ -128,10 +128,10 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
@@ -188,10 +188,10 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
         expect(result.data.cards).toHaveLength(54);
       });
@@ -234,10 +234,10 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
@@ -355,10 +355,10 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 
@@ -490,10 +490,10 @@ describe('Performance Tests', () => {
       const endTime = Date.now();
 
       const results = await Promise.all(
-        responses.map((response) => response.json()),
+        responses.map((response: Response) => response.json()),
       );
 
-      results.forEach((result) => {
+      results.forEach((result: any) => {
         expect(result.success).toBe(true);
       });
 

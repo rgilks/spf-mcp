@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { RngDO } from '../do/RngDO';
-import { DeckDO } from '../do/DeckDO';
+import { RngDO } from './do/RngDO';
+import { DeckDO } from './do/DeckDO';
 
 // Mock DurableObjectState
 const mockState = {
