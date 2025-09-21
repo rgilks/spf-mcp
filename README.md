@@ -10,13 +10,16 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 
 ### ✅ Implemented Features
 
-- Complete MCP server with 15+ tools
-- Durable Objects for session, combat, deck, and RNG management
-- JWT-based authentication with role-based access control
-- Comprehensive test suite with 95%+ coverage
-- TypeScript with Zod validation throughout
-- Cloudflare Workers deployment ready
-- Live demo and simulation capabilities
+- **Complete MCP Server**: 20+ tools for comprehensive tabletop gaming
+- **Durable Objects**: Session, combat, deck, and RNG management with strong consistency
+- **Authentication**: JWT-based with role-based access control (GM, Player, Observer)
+- **Combat Engine**: Full Action Deck initiative system with Hold/Interrupt mechanics
+- **Dice System**: Cryptographically secure RNG with audit trails and verification
+- **Actor Management**: Complete character sheets with traits, skills, edges, powers
+- **Spatial Tracking**: Battlemap positioning, movement, and area templates
+- **Rules Engine**: Damage calculation, power casting, soak rolls, and support tests
+- **Test Suite**: 95%+ coverage with unit, integration, and simulation tests
+- **TypeScript**: Full type safety with Zod validation throughout
 
 ## 🛠️ Technology Stack
 
@@ -35,19 +38,27 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 
 ### Core Game Management
 
-- **Session Management**: Create, load, update, and end game sessions
-- **Actor Management**: Full character sheets for PCs, NPCs, and creatures
-- **Combat System**: Initiative cards, turn order, hold/interrupt mechanics
-- **Dice Rolling**: Cryptographically secure RNG with audit trails
-- **Spatial Tracking**: Battlemap positioning and movement
-- **Resource Management**: Bennies, Power Points, ammunition tracking
+- **Session Management**: Create, load, update, and end game sessions with grid configuration
+- **Actor Management**: Complete character sheets for PCs, NPCs, and creatures with traits, skills, edges, powers
+- **Combat System**: Full Action Deck initiative with Jokers, Hold/Interrupt mechanics, turn order
+- **Dice Rolling**: Cryptographically secure RNG with audit trails and verification
+- **Spatial Tracking**: Battlemap positioning, movement, facing, and area templates
+- **Resource Management**: Bennies, Power Points, ammunition, conviction tracking
+
+### Rules Engine
+
+- **Damage System**: Apply damage, calculate wounds, shaken status, and incapacitation
+- **Power Casting**: Cast powers with PP costs, shorting penalties, and maintenance
+- **Soak Rolls**: Spend Bennies to reduce damage with proper calculations
+- **Support Tests**: Help other characters with skill tests
+- **Area Templates**: Calculate coverage for Small/Medium/Large Burst Templates, Cones, Streams
 
 ### Voice-First Design
 
 - **MCP Protocol**: Full compliance with Model Context Protocol
 - **GPT-5 Integration**: Designed for Voice Mode interaction
 - **Natural Language**: Players speak to the GM naturally
-- **Real-time Updates**: WebSocket support for live game state
+- **Real-time Updates**: Live game state synchronization
 
 ### Technical Architecture
 
@@ -256,36 +267,53 @@ const roll = await fetch('https://your-worker.workers.dev/mcp/tool/dice.roll', {
 
 **Session Management:**
 
-- `session.create` - Create new game session
-- `session.load` - Load existing session
-- `session.update` - Update session properties
-- `session.end` - End a game session
+- `session.create` - Create new game session with grid configuration
+- `session.load` - Load existing session with full state
+- `session.update` - Update session properties (status, round, turn, etc.)
+- `session.end` - End a game session with optional reason
 
 **Actor Management:**
 
-- `actor.upsert` - Create or update actor
+- `actor.upsert` - Create or update complete actor (PC, NPC, creature)
 - `actor.patch` - Update specific actor properties
-- `actor.move` - Move actor on battlemap
-- `actor.applyEffect` - Apply damage, healing, conditions
-- `actor.rollTrait` - Roll trait dice for an actor
+- `actor.move` - Move actor on battlemap with facing
+- `actor.applyEffect` - Apply damage, healing, conditions, resource changes
+- `actor.rollTrait` - Roll trait dice for an actor with modifiers
+- `actor.spendBenny` - Spend a Benny for various purposes
+- `actor.maintainConviction` - Maintain conviction with PP cost
 
 **Combat Management:**
 
-- `combat.start` - Start combat encounter
-- `combat.deal` - Deal initiative cards
-- `combat.hold` - Put actor on hold
+- `combat.start` - Start combat encounter with participants
+- `combat.deal` - Deal initiative cards (supports Level Headed, Quick edges)
+- `combat.hold` - Put actor on hold for interrupts
 - `combat.interrupt` - Interrupt with held actor
-- `combat.advanceTurn` - Advance to next turn
-- `combat.endRound` - End current round
+- `combat.advanceTurn` - Advance to next turn in initiative order
+- `combat.endRound` - End current round (auto-shuffle if Joker dealt)
 
-**Dice Rolling:**
+**Dice & RNG:**
 
-- `dice.roll` - Roll virtual dice with audit trail
+- `dice.roll` - Roll virtual dice with exploding, wild die, audit trail
+
+**Rules Engine:**
+
+- `rules.applyDamage` - Calculate and apply damage with wound/shaken status
+- `rules.soakRoll` - Spend Benny to reduce damage
+- `rules.castPower` - Cast powers with PP costs and shorting penalties
+- `rules.templateArea` - Calculate area template coverage
+
+**Support Tools:**
+
+- `support.test` - Help another character with skill test
+- `support.testOfWill` - Test of Will against fear, intimidation
+- `support.commonEdges` - Apply common edge effects
 
 ## 🧪 Testing
 
+The project includes a comprehensive test suite with 95%+ coverage:
+
 ```bash
-# Run all tests
+# Run all tests (single-run mode only)
 npm test
 
 # Run tests with coverage
@@ -302,6 +330,23 @@ node demo.js
 # Run live demo (requires deployed server)
 node demo-live.js
 ```
+
+### Test Categories
+
+- **Unit Tests**: Individual Durable Objects and MCP tools
+- **Integration Tests**: End-to-end MCP tool workflows
+- **Simulation Tests**: Complete combat scenarios and session lifecycles
+- **Property Tests**: RNG fairness and statistical validation
+- **Concurrency Tests**: Multi-client scenarios and race condition prevention
+- **Rules Tests**: Savage Worlds mechanics validation
+- **Performance Tests**: Load testing and latency measurements
+
+### Test Organization
+
+- Tests are placed alongside source files (`.test.ts`)
+- No `__tests__` directories - follows project conventions
+- Comprehensive coverage of all MCP tools and Durable Objects
+- Property-based testing for RNG and deck shuffling
 
 ## 🔧 Development
 
@@ -363,6 +408,17 @@ The server is designed to work seamlessly with GPT-5 Voice Mode:
 
 The server exposes a complete MCP manifest at `/mcp/manifest` with all available tools and resources.
 
+### Health Endpoints
+
+- `GET /healthz` - Health check with database connectivity
+- `GET /readyz` - Readiness check
+- `GET /mcp/manifest` - MCP server manifest
+
+### Authentication
+
+- `POST /auth/token` - Generate JWT token with API key
+- `POST /auth/refresh` - Refresh JWT token
+
 ### Session Management
 
 - `POST /mcp/tool/session.create` - Create session
@@ -377,6 +433,8 @@ The server exposes a complete MCP manifest at `/mcp/manifest` with all available
 - `POST /mcp/tool/actor.move` - Move actor
 - `POST /mcp/tool/actor.applyEffect` - Apply effects
 - `POST /mcp/tool/actor.rollTrait` - Roll trait dice
+- `POST /mcp/tool/actor.spendBenny` - Spend Benny
+- `POST /mcp/tool/actor.maintainConviction` - Maintain conviction
 - `GET /mcp/session/:id/actors` - List actors
 
 ### Combat Management
@@ -389,19 +447,41 @@ The server exposes a complete MCP manifest at `/mcp/manifest` with all available
 - `POST /mcp/tool/combat.endRound` - End round
 - `GET /mcp/combat/:id/state` - Get combat state
 
+### Rules Engine
+
+- `POST /mcp/tool/rules.applyDamage` - Apply damage with calculations
+- `POST /mcp/tool/rules.soakRoll` - Soak damage with Benny
+- `POST /mcp/tool/rules.castPower` - Cast power with PP costs
+- `POST /mcp/tool/rules.templateArea` - Calculate area template coverage
+
+### Support Tools
+
+- `POST /mcp/tool/support.test` - Support test for another character
+- `POST /mcp/tool/support.testOfWill` - Test of Will
+- `POST /mcp/tool/support.commonEdges` - Apply common edge effects
+
 ### Dice Rolling
 
 - `POST /mcp/tool/dice.roll` - Roll dice with audit trail
 
 ## 🔒 Security & Privacy
 
-- **Audit Trail**: All random events are cryptographically signed
+- **Authentication Required**: JWT-based authentication with role-based access control
+- **Role-Based Access**: GM (full access), Player (limited), Observer (read-only)
+- **Audit Trail**: All random events are cryptographically signed and verifiable
 - **Data Privacy**: No speech or video stored by default
-- **Access Control**: JWT-based authentication with role-based permissions
 - **Rate Limiting**: Per-session and per-IP limits with exponential backoff
 - **Input Validation**: All inputs validated with Zod schemas
 - **CORS Protection**: Secure cross-origin resource sharing
 - **SQL Injection Prevention**: Parameterized queries and input sanitization
+
+### Getting Access
+
+1. **Obtain API Key**: Contact server administrator for API key
+2. **Generate JWT Token**: Use API key to generate JWT with appropriate role
+3. **Include in Requests**: Add `Authorization: Bearer <token>` header to all requests
+
+See [docs/SECURITY.md](docs/SECURITY.md) for detailed security information.
 
 ## 🚀 Deployment
 
@@ -444,15 +524,36 @@ npm install
 # Run in development mode
 npm run dev
 
-# Run tests in watch mode (for development)
-npm test -- --watch
+# Run tests (single-run mode only)
+npm test
+
+# Run tests with coverage
+npm run test:coverage
 
 # Format code
 npm run format
 
 # Lint code
 npm run lint:fix
+
+# Type check
+npm run check
 ```
+
+### Code Style Guidelines
+
+- **No Classes**: Prefer functions and objects over TypeScript classes
+- **Functional Programming**: Use composition over inheritance
+- **Test Placement**: Place test files alongside source files (`.test.ts`)
+- **No JSDoc**: Keep code self-documenting through clear naming
+- **Zod Validation**: Use Zod schemas for all input/output validation
+
+## 📚 Documentation
+
+- **README.md** - This file: Setup, usage, and API reference
+- **docs/spec.md** - Technical specification for developers
+- **docs/SECURITY.md** - Security and authentication details
+- **docs/CURSOR_SETUP.md** - Cursor integration guide
 
 ## 📄 License
 

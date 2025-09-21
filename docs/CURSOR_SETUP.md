@@ -1,25 +1,22 @@
 # 🎲 Savage Pathfinder MCP Integration with Cursor
 
-This guide will help you integrate the Savage Pathfinder MCP server with Cursor so you can interact with the tabletop gaming system directly from the AI chat.
+This guide helps you integrate the Savage Pathfinder MCP server with Cursor for AI-powered tabletop gaming.
 
-## 🔒 **SECURITY NOTICE**
+## 🔒 Authentication Required
 
-**The MCP server now requires authentication!** You must obtain an API key and configure authentication before using the server.
+The MCP server requires authentication. You must obtain an API key before using the server.
 
 ## 🚀 Quick Setup
 
 ### Step 1: Get API Access
 
-Contact the server administrator to obtain:
-
-- **API Key**: For authenticating MCP clients
-- **JWT Secret**: For token generation (if running locally)
+Contact the server administrator to obtain your API key.
 
 ### Step 2: Configure Cursor MCP Settings
 
 1. Open Cursor
 2. Go to **Settings** → **Features** → **MCP**
-3. Add the following configuration to your MCP settings:
+3. Add this configuration:
 
 ```json
 {
@@ -29,8 +26,7 @@ Contact the server administrator to obtain:
       "args": ["/Users/robertgilks/Source/spf-mcp/mcp-proxy.js"],
       "env": {
         "SPF_SERVER_URL": "https://spf-mcp.rob-gilks.workers.dev",
-        "API_KEY": "your-api-key-here",
-        "JWT_TOKEN": "optional-pre-generated-token"
+        "API_KEY": "your-api-key-here"
       }
     }
   }
@@ -39,11 +35,11 @@ Contact the server administrator to obtain:
 
 ### Step 3: Restart Cursor
 
-After adding the configuration, restart Cursor to load the MCP server.
+Restart Cursor to load the MCP server.
 
 ### Step 4: Test the Integration
 
-Once Cursor restarts, you should be able to use the Savage Pathfinder tools directly in chat. Try asking:
+Try these commands in Cursor chat:
 
 - "Create a new game session called 'Goblin Ambush'"
 - "Roll 2d6+3 for damage"
@@ -51,7 +47,7 @@ Once Cursor restarts, you should be able to use the Savage Pathfinder tools dire
 
 ## 🎯 Available Tools
 
-The MCP server provides these tools for tabletop gaming:
+The MCP server provides 20+ tools for comprehensive tabletop gaming:
 
 ### Session Management
 
@@ -67,6 +63,8 @@ The MCP server provides these tools for tabletop gaming:
 - `actor.move` - Move actors on the battlemap
 - `actor.applyEffect` - Apply damage, healing, conditions
 - `actor.rollTrait` - Roll trait dice for characters
+- `actor.spendBenny` - Spend Bennies
+- `actor.maintainConviction` - Maintain conviction
 
 ### Combat System
 
@@ -76,6 +74,19 @@ The MCP server provides these tools for tabletop gaming:
 - `combat.interrupt` - Handle interrupts
 - `combat.advanceTurn` - Advance combat turns
 - `combat.endRound` - End combat rounds
+
+### Rules Engine
+
+- `rules.applyDamage` - Apply damage with calculations
+- `rules.soakRoll` - Soak damage with Bennies
+- `rules.castPower` - Cast powers with PP costs
+- `rules.templateArea` - Calculate area templates
+
+### Support Tools
+
+- `support.test` - Help other characters
+- `support.testOfWill` - Test of Will
+- `support.commonEdges` - Apply edge effects
 
 ### Dice Rolling
 

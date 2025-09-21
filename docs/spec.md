@@ -1,6 +1,8 @@
-# Savage Pathfinder – MCP Server & Voice GM (Cloudflare) – Full Specification
+# Savage Pathfinder MCP Server - Technical Specification
 
-**Purpose:** Build a production‑ready Model Context Protocol (MCP) server that persists and orchestrates a complete _Pathfinder for Savage Worlds_ ("Savage Pathfinder") game state while GPT‑5 (Voice Mode) performs as the Game Master. The system supports natural, hands‑free play: players talk to the GM; the GM speaks back, rolls dice, deals initiative cards, tracks positions on a battlemap, reads dice rolled on camera, and enforces core rules.
+**Purpose:** A production-ready Model Context Protocol (MCP) server that persists and orchestrates a complete _Pathfinder for Savage Worlds_ ("Savage Pathfinder") game state while GPT-5 (Voice Mode) performs as the Game Master. The system supports natural, hands-free play: players talk to the GM; the GM speaks back, rolls dice, deals initiative cards, tracks positions on a battlemap, and enforces core rules.
+
+> **Note:** This is the technical specification. For user documentation, see [README.md](../README.md).
 
 ---
 
@@ -8,20 +10,20 @@
 
 ### 1.1 Goals
 
-- Voice‑first play: players converse with the GM (GPT‑5 Voice Mode) without a keyboard.
-- Persistent, queryable game state: PCs, NPCs, powers, edges, hindrances, gear, conditions, Bennies, Conviction, Wounds, Fatigue, Power Points, ammo, etc.
-- Combat engine: initiative via Action Deck (including Jokers), Hold/interrupt, turn order, statuses; supports Extras sharing a card and Wild Cards acting individually.
-- Spatial awareness: track tokens/miniatures on a gridded battlemap, distances, reach, areas/templates, illumination levels.
-- Dice services: cryptographically fair RNG for virtual rolls; camera‑based recognition for physical dice; reconcile disputes.
-- Vision: the GM “sees” the table (battlemap + minis + dice) through a camera feed.
-- Multi‑party: 1–6+ players, remote or co‑located; session hand‑off and reconnection.
-- Cloudflare‑native, scalable, low‑latency; safe concurrent edits; audit trails.
-- Open protocol: all game tools exposed via MCP (resources + tools), so any compliant client (e.g., GPT‑5 Voice Mode) can drive the game.
+- **Voice-first play**: Players converse with the GM (GPT-5 Voice Mode) without a keyboard
+- **Persistent game state**: PCs, NPCs, powers, edges, hindrances, gear, conditions, Bennies, Conviction, Wounds, Fatigue, Power Points, ammo tracking
+- **Combat engine**: Initiative via Action Deck (including Jokers), Hold/interrupt, turn order, statuses; supports Extras sharing a card and Wild Cards acting individually
+- **Spatial awareness**: Track tokens/miniatures on a gridded battlemap, distances, reach, areas/templates, illumination levels
+- **Dice services**: Cryptographically fair RNG for virtual rolls with audit trails
+- **Multi-party support**: 1–6+ players, remote or co-located; session hand-off and reconnection
+- **Cloudflare-native**: Scalable, low-latency; safe concurrent edits; audit trails
+- **Open protocol**: All game tools exposed via MCP (resources + tools), so any compliant client can drive the game
 
-### 1.2 Non‑Goals
+### 1.2 Non-Goals
 
-- Authoring full adventures or VTT UI: we expose data & actions; UIs are optional.
-- Perfect computer‑vision for every dice/mini scenario: we provide robust pipelines + human adjudication fallbacks.
+- **Adventure authoring or VTT UI**: We expose data & actions; UIs are optional
+- **Perfect computer vision**: We provide robust pipelines + human adjudication fallbacks
+- **Camera-based dice recognition**: Focus on virtual dice with audit trails
 
 ---
 
@@ -523,32 +525,49 @@ wrangler deploy
 
 ---
 
-## 16) Testing Plan
+## 16) Testing Strategy
 
-- Unit tests for rule helpers (trait roll, damage, PP maintenance/shorting, AoE templates).
-- Property tests for deck shuffles (Fisher‑Yates, uniformity), exploding dice math.
-- Integration tests using DOs: multi‑client turn contention, Hold/interrupt.
-- Vision tests with golden dice/minis frames.
+The project implements a comprehensive testing strategy with 95%+ coverage:
+
+- **Unit Tests**: Rule helpers (trait roll, damage, PP maintenance/shorting, AoE templates)
+- **Property Tests**: Deck shuffles (Fisher-Yates, uniformity), exploding dice math
+- **Integration Tests**: Multi-client turn contention, Hold/interrupt using Durable Objects
+- **Simulation Tests**: Complete combat scenarios and session lifecycles
+- **Concurrency Tests**: Race condition prevention and concurrent state updates
+- **Performance Tests**: Load testing, stress testing, and latency measurements
+
+See [README.md](../README.md#-testing) for detailed testing information.
 
 ---
 
 ## 17) Future Enhancements
 
-- Cloudflare Calls (WebRTC relay) for multi‑camera rooms.
-- Semantic scene memory (narrative recap) pinned to session timeline.
-- Adventure module importer (encounters → seeded actors & terrain).
-- Safety sandbox: “dry‑run” mode that annotates rules outcomes without committing state.
+- **Cloudflare Calls**: WebRTC relay for multi-camera rooms
+- **Semantic Scene Memory**: Narrative recap pinned to session timeline
+- **Adventure Module Importer**: Encounters → seeded actors & terrain
+- **Safety Sandbox**: "Dry-run" mode that annotates rules outcomes without committing state
+- **Enhanced Vision**: Camera-based dice recognition and miniature tracking
+- **Advanced Analytics**: Game statistics and performance metrics
 
 ---
 
 ## 18) Deliverables
 
-- Cloudflare Worker repo with:
-  - MCP server (tools/resources), DO classes, D1 schema/migrations.
-  - Admin Panel (optional) and Dice Cam widget.
-  - Example Realtime Voice client seed project.
+- **Cloudflare Worker Repository**: Complete MCP server implementation
+  - MCP server (tools/resources), Durable Object classes, D1 schema/migrations
+  - Authentication system with JWT and role-based access control
+  - Comprehensive test suite with 95%+ coverage
+  - Production-ready deployment configuration
 
-- Ops docs (runbooks), environment templates, and postmortem template.
+- **Documentation**: Complete user and technical documentation
+  - README.md with setup, usage, and API reference
+  - Technical specification (this document)
+  - Security guide and deployment instructions
+
+- **Demo Applications**: Example usage and testing
+  - Live demo script for testing deployed server
+  - Simulation demo for offline testing
+  - MCP proxy for Cursor integration
 
 ---
 
