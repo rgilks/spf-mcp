@@ -111,7 +111,7 @@ export async function combatHoldHandler(c: any) {
     );
 
     const response = await combatDO.fetch(
-      new Request('http/combat/hold', {
+      new Request('http://combat/hold', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(input),
