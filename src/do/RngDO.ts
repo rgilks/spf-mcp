@@ -1,15 +1,12 @@
-import {
-  DiceRoll,
-  DiceRollRequestSchema,
-  DiceRollResponseSchema,
-} from '../schemas';
+import { DiceRoll, DiceRollRequestSchema } from '../schemas';
 import { v4 as uuidv4 } from 'uuid';
+import type { Env } from '../index';
 
 export class RngDO {
   state: DurableObjectState;
-  env: any;
+  env: Env;
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
   }
@@ -124,7 +121,13 @@ export class RngDO {
 
   private async handleVerify(request: Request): Promise<Response> {
     const body = await request.json();
-    const { seed, results, wild, modifier, hash } = body as any;
+    const { seed, results, wild, modifier, hash } = body as {
+      seed: string;
+      results: number[][];
+      wild?: number[];
+      modifier?: number;
+      hash: string;
+    };
 
     if (!seed || !results || !hash) {
       return new Response(

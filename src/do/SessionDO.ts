@@ -4,18 +4,18 @@ import {
   CreateSessionRequestSchema,
   UpdateSessionRequestSchema,
   CreateActorRequestSchema,
-  UpdateActorRequestSchema,
   MoveActorRequestSchema,
   ApplyEffectRequestSchema,
   RollTraitRequestSchema,
 } from '../schemas';
 import { v4 as uuidv4 } from 'uuid';
+import type { Env } from '../index';
 
 export class SessionDO {
   state: DurableObjectState;
-  env: any;
+  env: Env;
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
   }
@@ -203,7 +203,7 @@ export class SessionDO {
 
     // Build dynamic update query
     const updates: string[] = [];
-    const values: any[] = [];
+    const values: unknown[] = [];
 
     if (input.patch.name !== undefined) {
       updates.push('name = ?');
@@ -272,7 +272,10 @@ export class SessionDO {
 
   private async handleEnd(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, reason } = body as any;
+    const { sessionId, reason } = body as {
+      sessionId: string;
+      reason?: string;
+    };
 
     const now = new Date().toISOString();
 

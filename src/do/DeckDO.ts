@@ -1,11 +1,12 @@
 import { InitiativeCard, DeckState, DeckStateSchema } from '../schemas';
 import { v4 as uuidv4 } from 'uuid';
+import type { Env } from '../index';
 
 export class DeckDO {
   state: DurableObjectState;
-  env: Record<string, unknown>;
+  env: Env;
 
-  constructor(state: DurableObjectState, env: Record<string, unknown>) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
   }

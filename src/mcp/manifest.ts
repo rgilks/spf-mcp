@@ -1,6 +1,7 @@
 import type { Env } from '../index';
+import type { Context } from 'hono';
 
-export const handleMcpManifest = (c: any) => {
+export const handleMcpManifest = (c: Context<{ Bindings: Env }>) => {
   const body = {
     name: c.env.MCP_SERVER_NAME || 'spf-mcp',
     version: '0.1.0',

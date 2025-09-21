@@ -10,16 +10,11 @@ import {
 } from './middleware/auth';
 import { testAuthMiddleware } from './middleware/test-auth';
 import {
-  rateLimit,
   diceRateLimit,
   sessionRateLimit,
   combatRateLimit,
 } from './middleware/rate-limit';
-import {
-  validateInput,
-  sanitizeInput,
-  validateSessionId,
-} from './middleware/validation';
+import { sanitizeInput } from './middleware/validation';
 import { CombatDO } from './do/CombatDO';
 import { DeckDO } from './do/DeckDO';
 import { RngDO } from './do/RngDO';
@@ -42,10 +37,43 @@ const app = new Hono<{ Bindings: Env }>();
 
 // Apply security middleware
 app.use('*', secureCors);
-app.use('*', sanitizeInput as any);
+app.use('*', sanitizeInput);
 
 // Public endpoints (no auth required)
-app.get('/healthz', (c) => c.text('ok'));
+app.get('/healthz', async (c) => {
+  try {
+    // Check database connectivity
+    const dbCheck = await c.env.DB.prepare('SELECT 1').first();
+    if (!dbCheck) {
+      return c.json(
+        { status: 'unhealthy', error: 'Database connection failed' },
+        503,
+      );
+    }
+
+    return c.json({
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      services: {
+        database: 'ok',
+        durableObjects: 'ok',
+      },
+    });
+  } catch (error) {
+    return c.json(
+      {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString(),
+      },
+      503,
+    );
+  }
+});
+
+app.get('/readyz', (c) =>
+  c.json({ status: 'ready', timestamp: new Date().toISOString() }),
+);
 app.get('/mcp/manifest', handleMcpManifest);
 
 // Authentication endpoints
@@ -56,18 +84,18 @@ app.route('/', authRouter);
 const authMiddlewareToUse =
   process.env.NODE_ENV === 'test' ? testAuthMiddleware : authMiddleware;
 
-app.use('/mcp/tool/*', authMiddlewareToUse as any);
+app.use('/mcp/tool/*', authMiddlewareToUse);
 app.use('/mcp/tool/session.*', sessionRateLimit);
 app.use('/mcp/tool/dice.*', diceRateLimit);
 app.use('/mcp/tool/combat.*', combatRateLimit);
 
 // Apply role-based access control (skip in test environment)
 if (process.env.NODE_ENV !== 'test') {
-  app.use('/mcp/tool/session.create', requireRole('gm') as any);
-  app.use('/mcp/tool/session.update', requireRole('gm') as any);
-  app.use('/mcp/tool/session.end', requireRole('gm') as any);
-  app.use('/mcp/tool/combat.*', requireRole('gm') as any);
-  app.use('/mcp/tool/*', requireSessionAccess as any);
+  app.use('/mcp/tool/session.create', requireRole('gm'));
+  app.use('/mcp/tool/session.update', requireRole('gm'));
+  app.use('/mcp/tool/session.end', requireRole('gm'));
+  app.use('/mcp/tool/combat.*', requireRole('gm'));
+  app.use('/mcp/tool/*', requireSessionAccess);
 }
 
 app.route('/mcp/tool', mcpToolsRouter);

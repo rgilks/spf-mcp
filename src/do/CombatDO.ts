@@ -1,11 +1,11 @@
 import { CombatState, InitiativeCard } from '../schemas';
-import { v4 as uuidv4 } from 'uuid';
+import type { Env } from '../index';
 
 export class CombatDO {
   state: DurableObjectState;
-  env: any;
+  env: Env;
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Env) {
     this.state = state;
     this.env = env;
   }
@@ -49,7 +49,11 @@ export class CombatDO {
 
   private async handleStart(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, participants, options = {} } = body as any;
+    const { sessionId, participants } = body as {
+      sessionId: string;
+      participants: string[];
+      options?: Record<string, unknown>;
+    };
 
     const combatState: CombatState = {
       sessionId,
@@ -77,7 +81,10 @@ export class CombatDO {
 
   private async handleDeal(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, extraDraws = {} } = body as any;
+    const { sessionId, extraDraws = {} } = body as {
+      sessionId: string;
+      extraDraws?: Record<string, number>;
+    };
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -152,7 +159,10 @@ export class CombatDO {
 
   private async handleHold(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, actorId } = body as any;
+    const { actorId } = body as {
+      sessionId: string;
+      actorId: string;
+    };
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -197,11 +207,15 @@ export class CombatDO {
   private async handleInterrupt(request: Request): Promise<Response> {
     const body = await request.json();
     const {
-      sessionId,
       actorId,
       targetActorId,
       interruptType = 'general',
-    } = body as any;
+    } = body as {
+      sessionId: string;
+      actorId: string;
+      targetActorId: string;
+      interruptType?: string;
+    };
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -281,7 +295,7 @@ export class CombatDO {
 
   private async handleAdvanceTurn(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId } = body as any;
+    const { sessionId } = body as { sessionId: string };
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -400,7 +414,7 @@ export class CombatDO {
 
   private async handleEndRound(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId } = body as any;
+    const { sessionId } = body as { sessionId: string };
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -456,7 +470,7 @@ export class CombatDO {
     );
   }
 
-  private async handleGetState(request: Request): Promise<Response> {
+  private async handleGetState(_request: Request): Promise<Response> {
     const combatState = await this.getCombatState();
     if (!combatState) {
       return new Response(

@@ -4,8 +4,9 @@ import {
 } from '../../schemas';
 import type { Env } from '../../index';
 import { ZodError } from 'zod';
+import type { Context } from 'hono';
 
-export async function sessionCreateHandler(c: any) {
+export async function sessionCreateHandler(c: Context<{ Bindings: Env }>) {
   try {
     const body = await c.req.json();
     const input = CreateSessionRequestSchema.parse(body);
@@ -59,7 +60,7 @@ export async function sessionCreateHandler(c: any) {
   }
 }
 
-export async function sessionLoadHandler(c: any) {
+export async function sessionLoadHandler(c: Context<{ Bindings: Env }>) {
   try {
     const sessionId = c.req.param('sessionId');
     if (!sessionId) {
@@ -119,7 +120,7 @@ export async function sessionLoadHandler(c: any) {
   }
 }
 
-export async function sessionUpdateHandler(c: any) {
+export async function sessionUpdateHandler(c: Context<{ Bindings: Env }>) {
   try {
     const body = await c.req.json();
     const input = UpdateSessionRequestSchema.parse(body);
@@ -173,7 +174,7 @@ export async function sessionUpdateHandler(c: any) {
   }
 }
 
-export async function sessionEndHandler(c: any) {
+export async function sessionEndHandler(c: Context<{ Bindings: Env }>) {
   try {
     const body = await c.req.json();
     const { sessionId, reason } = body;
