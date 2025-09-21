@@ -20426,6 +20426,12 @@ __name(securityHeaders, 'securityHeaders');
 
 // src/middleware/env-validation.ts
 function validateEnvironment(env) {
+  console.log('Environment validation - checking variables:', {
+    JWT_SECRET: env.JWT_SECRET ? '***' : 'missing',
+    API_KEY: env.API_KEY ? '***' : 'missing',
+    MCP_SERVER_NAME: env.MCP_SERVER_NAME,
+    NODE_ENV: env.NODE_ENV,
+  });
   const requiredEnvVars = ['JWT_SECRET', 'API_KEY', 'MCP_SERVER_NAME'];
   const missingVars = [];
   for (const varName of requiredEnvVars) {
@@ -20434,16 +20440,19 @@ function validateEnvironment(env) {
     }
   }
   if (missingVars.length > 0) {
+    console.error(
+      `Missing required environment variables: ${missingVars.join(', ')}`,
+    );
     throw new Error(
       `Missing required environment variables: ${missingVars.join(', ')}. Please ensure all required secrets are configured in Cloudflare Workers.`,
     );
   }
-  if (env.JWT_SECRET.length < 32) {
+  if (env.JWT_SECRET && env.JWT_SECRET.length < 32) {
     throw new Error(
       'JWT_SECRET must be at least 32 characters long for security. Please generate a stronger secret.',
     );
   }
-  if (env.API_KEY.length < 16) {
+  if (env.API_KEY && env.API_KEY.length < 16) {
     throw new Error(
       'API_KEY must be at least 16 characters long for security. Please generate a stronger API key.',
     );
@@ -22144,18 +22153,22 @@ var SessionDO = class {
 
 // src/index.ts
 var app = new Hono2();
+var envValidated = false;
 app.use('*', async (c, next) => {
-  try {
-    validateEnvironment(c.env);
-  } catch (error45) {
-    console.error('Environment validation failed:', error45);
-    return c.json(
-      {
-        success: false,
-        error: 'Server configuration error',
-      },
-      500,
-    );
+  if (!envValidated) {
+    try {
+      validateEnvironment(c.env);
+      envValidated = true;
+    } catch (error45) {
+      console.error('Environment validation failed:', error45);
+      return c.json(
+        {
+          success: false,
+          error: 'Server configuration error',
+        },
+        500,
+      );
+    }
   }
   await next();
 });

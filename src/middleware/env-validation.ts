@@ -1,6 +1,13 @@
 import type { Env } from '../index';
 
 export function validateEnvironment(env: Env): void {
+  console.log('Environment validation - checking variables:', {
+    JWT_SECRET: env.JWT_SECRET ? '***' : 'missing',
+    API_KEY: env.API_KEY ? '***' : 'missing',
+    MCP_SERVER_NAME: env.MCP_SERVER_NAME,
+    NODE_ENV: env.NODE_ENV,
+  });
+
   const requiredEnvVars = ['JWT_SECRET', 'API_KEY', 'MCP_SERVER_NAME'];
   const missingVars: string[] = [];
 
@@ -11,6 +18,9 @@ export function validateEnvironment(env: Env): void {
   }
 
   if (missingVars.length > 0) {
+    console.error(
+      `Missing required environment variables: ${missingVars.join(', ')}`,
+    );
     throw new Error(
       `Missing required environment variables: ${missingVars.join(', ')}. ` +
         'Please ensure all required secrets are configured in Cloudflare Workers.',
@@ -18,7 +28,7 @@ export function validateEnvironment(env: Env): void {
   }
 
   // Validate JWT_SECRET strength
-  if (env.JWT_SECRET.length < 32) {
+  if (env.JWT_SECRET && env.JWT_SECRET.length < 32) {
     throw new Error(
       'JWT_SECRET must be at least 32 characters long for security. ' +
         'Please generate a stronger secret.',
@@ -26,7 +36,7 @@ export function validateEnvironment(env: Env): void {
   }
 
   // Validate API_KEY strength
-  if (env.API_KEY.length < 16) {
+  if (env.API_KEY && env.API_KEY.length < 16) {
     throw new Error(
       'API_KEY must be at least 16 characters long for security. ' +
         'Please generate a stronger API key.',
