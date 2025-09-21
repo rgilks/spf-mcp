@@ -8,6 +8,14 @@
         "JWT_SECRET": "your-jwt-secret-here",
         "API_KEY": "your-api-key-here"
       }
+    },
+    "spf-mcp-deployed": {
+      "command": "node",
+      "args": ["/Users/robertgilks/Source/spf-mcp/mcp-proxy.js"],
+      "env": {
+        "SPF_SERVER_URL": "https://spf-mcp.rob-gilks.workers.dev",
+        "API_KEY": "your-api-key-here"
+      }
     }
   }
 }

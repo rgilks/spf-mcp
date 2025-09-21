@@ -98,6 +98,15 @@ app.get('/healthz', async (c) => {
 app.get('/readyz', (c) =>
   c.json({ status: 'ready', timestamp: new Date().toISOString() }),
 );
+
+// Simple test endpoint
+app.get('/test', (c) => {
+  return c.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    message: 'Server is running',
+  });
+});
 app.get('/mcp/manifest', handleMcpManifest);
 
 // Authentication endpoints

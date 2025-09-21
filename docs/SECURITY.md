@@ -1,46 +1,46 @@
-# 🔒 Security Guide - Savage Pathfinder MCP Server
+# Security Guide
 
-## 🚨 **CRITICAL: Authentication Required**
+## 🔒 Authentication Required
 
-The Savage Pathfinder MCP Server now requires authentication for all game operations. **The server is no longer open to the public.**
+The Savage Pathfinder MCP Server requires authentication for all game operations.
 
-## 🛡️ **Security Features Implemented**
+## 🛡️ Security Features
 
-### **1. JWT-Based Authentication**
+### JWT-Based Authentication
 
 - **Required**: All MCP tool endpoints require valid JWT tokens
 - **Roles**: `gm` (Game Master), `player`, `observer`
 - **Expiration**: Tokens expire after 24 hours
 - **Validation**: Cryptographic signature verification
 
-### **2. Role-Based Access Control (RBAC)**
+### Role-Based Access Control (RBAC)
 
 - **Game Master (GM)**: Full access to all operations
 - **Player**: Limited to dice rolling and character actions
 - **Observer**: Read-only access to game state
 
-### **3. Rate Limiting**
+### Rate Limiting
 
 - **Session Operations**: 10 requests per minute
 - **Dice Rolling**: 50 requests per minute
 - **Combat Actions**: 30 requests per minute
 - **General API**: 100 requests per minute
 
-### **4. Input Validation & Sanitization**
+### Input Validation & Sanitization
 
 - **Zod Schemas**: All inputs validated against strict schemas
 - **XSS Protection**: HTML/JavaScript injection prevention
 - **SQL Injection**: Parameterized queries only
 - **UUID Validation**: Strict format checking
 
-### **5. CORS Protection**
+### CORS Protection
 
 - **Allowed Origins**: Cursor, localhost (dev only), specific domains
 - **Methods**: GET, POST, PUT, DELETE, OPTIONS
 - **Headers**: Authorization, Content-Type, X-Session-ID, X-API-Key
 - **Credentials**: Secure cookie handling
 
-### **6. Security Headers**
+### Security Headers
 
 - **X-Content-Type-Options**: nosniff
 - **X-Frame-Options**: DENY
@@ -49,20 +49,13 @@ The Savage Pathfinder MCP Server now requires authentication for all game operat
 - **Content-Security-Policy**: Restrictive CSP
 - **Referrer-Policy**: strict-origin-when-cross-origin
 
-### **7. Security Logging**
+## 🔑 Getting Access
 
-- **Authentication Failures**: Logged with IP and user agent
-- **Rate Limit Violations**: Tracked for abuse detection
-- **Suspicious Activity**: Long requests and unusual patterns
-- **Audit Trail**: 30-day retention in KV storage
-
-## 🔑 **Getting Access**
-
-### **Step 1: Generate API Key**
+### Step 1: Generate API Key
 
 Contact the server administrator to obtain your API key.
 
-### **Step 2: Generate JWT Token**
+### Step 2: Generate JWT Token
 
 ```bash
 curl -X POST https://spf-mcp.rob-gilks.workers.dev/auth/token \
@@ -74,7 +67,7 @@ curl -X POST https://spf-mcp.rob-gilks.workers.dev/auth/token \
   }'
 ```
 
-### **Step 3: Use Token in Requests**
+### Step 3: Use Token in Requests
 
 ```bash
 curl -X POST https://spf-mcp.rob-gilks.workers.dev/mcp/tool/session.create \
@@ -83,9 +76,9 @@ curl -X POST https://spf-mcp.rob-gilks.workers.dev/mcp/tool/session.create \
   -d '{"name": "My Game", "grid": {...}}'
 ```
 
-## 🎮 **Role Permissions**
+## 🎮 Role Permissions
 
-### **Game Master (GM)**
+### Game Master (GM)
 
 - ✅ Create/update/end sessions
 - ✅ Start/manage combat
@@ -93,7 +86,7 @@ curl -X POST https://spf-mcp.rob-gilks.workers.dev/mcp/tool/session.create \
 - ✅ Roll dice for any purpose
 - ✅ Access all game data
 
-### **Player**
+### Player
 
 - ✅ Roll dice for their character
 - ✅ Update their character stats
@@ -102,23 +95,23 @@ curl -X POST https://spf-mcp.rob-gilks.workers.dev/mcp/tool/session.create \
 - ❌ Cannot manage combat
 - ❌ Cannot access other players' data
 
-### **Observer**
+### Observer
 
 - ✅ View game state
 - ✅ Read session information
 - ❌ Cannot perform any actions
 - ❌ Cannot modify data
 
-## 🔐 **Environment Variables**
+## 🔐 Environment Variables
 
-### **Required for Production**
+### Required for Production
 
 ```bash
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 API_KEY=your-api-key-for-mcp-clients
 ```
 
-### **Security Best Practices**
+### Security Best Practices
 
 1. **Change Default Secrets**: Never use default JWT secret or API key
 2. **Rotate Keys**: Regularly rotate JWT secrets and API keys
@@ -126,60 +119,60 @@ API_KEY=your-api-key-for-mcp-clients
 4. **Rate Limiting**: Respect rate limits to avoid blocking
 5. **Token Expiration**: Refresh tokens before they expire
 
-## 🚨 **Security Incidents**
+## 🚨 Security Incidents
 
-### **If You Suspect a Breach**
+### If You Suspect a Breach
 
 1. **Immediately rotate** JWT_SECRET and API_KEY
 2. **Check logs** for unauthorized access
 3. **Revoke** all existing tokens
 4. **Contact** the server administrator
 
-### **Rate Limit Exceeded**
+### Rate Limit Exceeded
 
 - **Error**: `429 Too Many Requests`
 - **Solution**: Wait for the rate limit window to reset
 - **Prevention**: Implement client-side rate limiting
 
-### **Invalid Token**
+### Invalid Token
 
 - **Error**: `401 Unauthorized`
 - **Solution**: Generate a new token
 - **Prevention**: Check token expiration before use
 
-## 📊 **Monitoring & Logging**
+## 📊 Monitoring & Logging
 
-### **What's Logged**
+### What's Logged
 
 - Authentication attempts (success/failure)
 - Rate limit violations
 - Invalid input attempts
 - Security policy violations
 
-### **What's NOT Logged**
+### What's NOT Logged
 
 - JWT token contents
 - API key values
 - Sensitive game data
 - Player personal information
 
-## 🔧 **Development vs Production**
+## 🔧 Development vs Production
 
-### **Development**
+### Development
 
 - CORS allows localhost
 - Rate limits are relaxed
 - Detailed error messages
 - Debug logging enabled
 
-### **Production**
+### Production
 
 - Strict CORS policies
 - Enforced rate limits
 - Generic error messages
 - Minimal logging
 
-## 📞 **Support**
+## 📞 Support
 
 For security questions or to report vulnerabilities:
 

@@ -4,13 +4,19 @@
   "description": "Savage Pathfinder MCP Server for AI-powered tabletop gaming",
   "server": {
     "command": "npm",
-    "args": ["run", "dev"],
+    "args": ["run", "mcp"],
     "env": {
-      "NODE_ENV": "development"
+      "NODE_ENV": "production",
+      "JWT_SECRET": "your-jwt-secret-here",
+      "API_KEY": "your-api-key-here"
     }
   },
   "capabilities": {
     "tools": true,
     "resources": true
+  },
+  "deployment": {
+    "url": "https://spf-mcp.rob-gilks.workers.dev",
+    "type": "cloudflare-workers"
   }
 }
