@@ -5,7 +5,6 @@ export function validateEnvironment(env: Env): void {
     JWT_SECRET: env.JWT_SECRET ? '***' : 'missing',
     API_KEY: env.API_KEY ? '***' : 'missing',
     MCP_SERVER_NAME: env.MCP_SERVER_NAME,
-    NODE_ENV: env.NODE_ENV,
   });
 
   const requiredEnvVars = ['JWT_SECRET', 'API_KEY', 'MCP_SERVER_NAME'];
