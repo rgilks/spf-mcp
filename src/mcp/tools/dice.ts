@@ -3,7 +3,7 @@ import { ZodError } from 'zod';
 import { SpfMcpError } from '../errors';
 import { ErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
-export async function diceRollHandler(c: unknown) {
+export async function diceRollHandler(c: any) {
   try {
     const body = await c.req.json();
     const input = DiceRollRequestSchema.parse(body);
@@ -62,7 +62,7 @@ export async function diceRollHandler(c: unknown) {
   }
 }
 
-export async function diceRollWithConvictionHandler(c: unknown) {
+export async function diceRollWithConvictionHandler(c: any) {
   try {
     const body = await c.req.json();
     const { formula, explode, wildDie, seed, actorId, conviction } = body;

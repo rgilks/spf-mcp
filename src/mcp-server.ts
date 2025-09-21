@@ -753,7 +753,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         return undefined;
       },
     },
-    json: (data: unknown, status?: number) => {
+    json: (data: any, status?: number) => {
       if (status && status >= 400) {
         throw new Error(data.error || 'Tool execution failed');
       }
@@ -775,7 +775,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   };
 
   try {
-    const result = await handler(mockContext as unknown);
+    const result = await handler(mockContext as any);
     return {
       content: [
         {

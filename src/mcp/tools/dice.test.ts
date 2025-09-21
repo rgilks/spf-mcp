@@ -38,7 +38,7 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as unknown);
+      await diceRollHandler(mockCtx as any);
 
       expect(mockCtx.env.RngDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -147,7 +147,7 @@ describe('Dice MCP Tools', () => {
       mockCtx.env.RngDO.get.mockReturnValue(mockRngDO);
       mockCtx.env.RngDO.idFromName.mockReturnValue('mock-rng-id');
 
-      await diceRollHandler(mockCtx as unknown);
+      await diceRollHandler(mockCtx as any);
 
       expect(mockRngDO.fetch).toHaveBeenCalledWith(
         expect.objectContaining({

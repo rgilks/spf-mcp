@@ -43,7 +43,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionCreateHandler(mockCtx as unknown);
+      await sessionCreateHandler(mockCtx as any);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -69,7 +69,7 @@ describe('Session MCP Tools', () => {
         },
       });
 
-      await expect(sessionCreateHandler(mockCtx as unknown)).rejects.toThrow();
+      await expect(sessionCreateHandler(mockCtx as any)).rejects.toThrow();
     });
   });
 
@@ -90,7 +90,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionLoadHandler(mockCtx as unknown);
+      await sessionLoadHandler(mockCtx as any);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -122,7 +122,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionLoadHandler(mockCtx as unknown);
+      await sessionLoadHandler(mockCtx as any);
 
       expect(mockCtx.json).toHaveBeenCalledWith(
         {
@@ -137,7 +137,7 @@ describe('Session MCP Tools', () => {
       const mockCtx = createMockContext();
       mockCtx.req.param.mockReturnValue(undefined);
 
-      await expect(sessionLoadHandler(mockCtx as unknown)).rejects.toThrow(
+      await expect(sessionLoadHandler(mockCtx as any)).rejects.toThrow(
         'sessionId parameter required',
       );
     });
@@ -170,7 +170,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionUpdateHandler(mockCtx as unknown);
+      await sessionUpdateHandler(mockCtx as any);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -206,7 +206,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionUpdateHandler(mockCtx as unknown);
+      await sessionUpdateHandler(mockCtx as any);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
     });
@@ -218,7 +218,7 @@ describe('Session MCP Tools', () => {
         name: 'Updated Session',
       });
 
-      await expect(sessionUpdateHandler(mockCtx as unknown)).rejects.toThrow();
+      await expect(sessionUpdateHandler(mockCtx as any)).rejects.toThrow();
     });
   });
 
@@ -240,7 +240,7 @@ describe('Session MCP Tools', () => {
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
       mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
-      await sessionEndHandler(mockCtx as unknown);
+      await sessionEndHandler(mockCtx as any);
 
       expect(mockCtx.env.SessionDO.get).toHaveBeenCalled();
       expect(mockCtx.json).toHaveBeenCalledWith({
@@ -259,7 +259,7 @@ describe('Session MCP Tools', () => {
         sessionId: 'invalid-uuid',
       });
 
-      await expect(sessionEndHandler(mockCtx as unknown)).rejects.toThrow();
+      await expect(sessionEndHandler(mockCtx as any)).rejects.toThrow();
     });
   });
 });
