@@ -38,26 +38,26 @@ export type Env = {
 
 const app = new Hono<{ Bindings: Env }>();
 
-// Validate environment on startup (only once)
-let envValidated = false;
-app.use('*', async (c, next) => {
-  if (!envValidated) {
-    try {
-      validateEnvironment(c.env);
-      envValidated = true;
-    } catch (error) {
-      console.error('Environment validation failed:', error);
-      return c.json(
-        {
-          success: false,
-          error: 'Server configuration error',
-        },
-        500,
-      );
-    }
-  }
-  await next();
-});
+// Validate environment on startup (only once) - temporarily disabled for debugging
+// let envValidated = false;
+// app.use('*', async (c, next) => {
+//   if (!envValidated) {
+//     try {
+//       validateEnvironment(c.env);
+//       envValidated = true;
+//     } catch (error) {
+//       console.error('Environment validation failed:', error);
+//       return c.json(
+//         {
+//           success: false,
+//           error: 'Server configuration error',
+//         },
+//         500,
+//       );
+//     }
+//   }
+//   await next();
+// });
 
 // Apply security middleware
 app.use('*', securityHeaders as any);
