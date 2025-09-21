@@ -1,4 +1,9 @@
-import { CombatState, InitiativeCard } from '../schemas';
+import {
+  CombatState,
+  InitiativeCard,
+  MultiActionPenalty,
+  ExtrasGroup,
+} from '../schemas';
 import type { Env } from '../index';
 
 export class CombatDO {
@@ -28,7 +33,22 @@ export class CombatDO {
       } else if (request.method === 'POST' && path.endsWith('/endRound')) {
         return await this.handleEndRound(request);
       } else if (request.method === 'GET' && path.endsWith('/state')) {
-        return await this.handleGetState(request);
+        return await this.handleGetState();
+      } else if (
+        request.method === 'POST' &&
+        path.endsWith('/setMultiAction')
+      ) {
+        return await this.handleSetMultiAction(request);
+      } else if (
+        request.method === 'POST' &&
+        path.endsWith('/clearMultiAction')
+      ) {
+        return await this.handleClearMultiAction(request);
+      } else if (
+        request.method === 'POST' &&
+        path.endsWith('/createExtrasGroup')
+      ) {
+        return await this.handleCreateExtrasGroup(request);
       } else {
         return new Response('Not Found', { status: 404 });
       }
@@ -134,9 +154,19 @@ export class CombatDO {
     }
 
     // Sort participants by card value (highest first)
+    const dealt = dealResult.data?.dealt;
+    if (!dealt) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'No dealt cards found',
+        }),
+        { status: 500, headers: { 'content-type': 'application/json' } },
+      );
+    }
     const sortedParticipants = this.sortByCardValue(
       combatState.participants,
-      dealResult.data!.dealt,
+      dealt,
     );
 
     // Update combat state
@@ -153,10 +183,10 @@ export class CombatDO {
         success: true,
         data: {
           ...combatState,
-          dealt: dealResult.data!.dealt,
+          dealt: dealResult.data?.dealt,
           turnOrder: sortedParticipants,
-          jokerBonuses: dealResult.data!.jokerBonuses,
-          jokerDealt: dealResult.data!.jokerDealt,
+          jokerBonuses: dealResult.data?.jokerBonuses,
+          jokerDealt: dealResult.data?.jokerDealt,
         },
         serverTs: new Date().toISOString(),
       }),
@@ -357,7 +387,16 @@ export class CombatDO {
       );
     }
 
-    const dealt = deckResult.data!.dealt;
+    const dealt = deckResult.data?.dealt;
+    if (!dealt) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'No dealt cards found',
+        }),
+        { status: 500, headers: { 'content-type': 'application/json' } },
+      );
+    }
     const sortedParticipants = this.sortByCardValue(
       combatState.participants,
       dealt,
@@ -457,8 +496,8 @@ export class CombatDO {
       };
     };
 
-    if (deckResult.success) {
-      const deckState = deckResult.data!;
+    if (deckResult.success && deckResult.data) {
+      const deckState = deckResult.data;
       if (deckState.lastJokerRound === combatState.round) {
         // Shuffle deck for next round
         await deckDO.fetch(
@@ -491,7 +530,7 @@ export class CombatDO {
     );
   }
 
-  private async handleGetState(_request: Request): Promise<Response> {
+  private async handleGetState(): Promise<Response> {
     const combatState = await this.getCombatState();
     if (!combatState) {
       return new Response(
@@ -560,6 +599,155 @@ export class CombatDO {
 
       return bSuitIndex - aSuitIndex; // Higher suit first
     });
+  }
+
+  private async handleSetMultiAction(request: Request): Promise<Response> {
+    const body = await request.json();
+    const { actorId, actions, description } = body as {
+      sessionId: string;
+      actorId: string;
+      actions: number;
+      description: string;
+    };
+
+    const combatState = await this.getCombatState();
+    if (!combatState) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Combat not started',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    // Calculate penalty: -2 per additional action
+    const penalty = (actions - 1) * 2;
+
+    const multiActionPenalty: MultiActionPenalty = {
+      actorId,
+      actions,
+      penalty,
+      description,
+    };
+
+    // Update or add multi-action penalty
+    if (!combatState.multiActionPenalties) {
+      combatState.multiActionPenalties = [];
+    }
+
+    // Remove existing penalty for this actor
+    combatState.multiActionPenalties = combatState.multiActionPenalties.filter(
+      (p) => p.actorId !== actorId,
+    );
+
+    // Add new penalty
+    combatState.multiActionPenalties.push(multiActionPenalty);
+
+    await this.state.storage.put('combatState', combatState);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: {
+          ...combatState,
+          multiActionPenalty,
+        },
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+
+  private async handleClearMultiAction(request: Request): Promise<Response> {
+    const body = await request.json();
+    const { actorId } = body as {
+      sessionId: string;
+      actorId: string;
+    };
+
+    const combatState = await this.getCombatState();
+    if (!combatState) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Combat not started',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    // Remove multi-action penalty for this actor
+    if (combatState.multiActionPenalties) {
+      combatState.multiActionPenalties =
+        combatState.multiActionPenalties.filter((p) => p.actorId !== actorId);
+    }
+
+    await this.state.storage.put('combatState', combatState);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: combatState,
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
+  }
+
+  private async handleCreateExtrasGroup(request: Request): Promise<Response> {
+    const body = await request.json();
+    const { groupName, actorIds, sharedCard } = body as {
+      sessionId: string;
+      groupName: string;
+      actorIds: string[];
+      sharedCard: boolean;
+    };
+
+    const combatState = await this.getCombatState();
+    if (!combatState) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Combat not started',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    const groupId = `group-${Date.now()}`;
+    const extrasGroup: ExtrasGroup = {
+      groupId,
+      actorIds,
+      sharedCard,
+      groupName,
+    };
+
+    // Add extras group
+    if (!combatState.extrasGroups) {
+      combatState.extrasGroups = [];
+    }
+    combatState.extrasGroups.push(extrasGroup);
+
+    await this.state.storage.put('combatState', combatState);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: {
+          ...combatState,
+          extrasGroup,
+        },
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
   }
 
   private async getCombatState(): Promise<CombatState | null> {

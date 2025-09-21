@@ -18,6 +18,11 @@ export class RngDO {
     try {
       if (request.method === 'POST' && path.endsWith('/roll')) {
         return await this.handleRoll(request);
+      } else if (
+        request.method === 'POST' &&
+        path.endsWith('/rollWithConviction')
+      ) {
+        return await this.handleRollWithConviction(request);
       } else if (request.method === 'POST' && path.endsWith('/verify')) {
         return await this.handleVerify(request);
       } else {
@@ -240,11 +245,13 @@ export class RngDO {
     results: number[][],
     wild: number[] | undefined,
     modifier: number,
+    conviction?: number[],
   ): Promise<string> {
     const data = {
       seed,
       results,
       wild,
+      conviction,
       modifier,
       timestamp: Date.now(),
     };
@@ -256,6 +263,111 @@ export class RngDO {
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  private async handleRollWithConviction(request: Request): Promise<Response> {
+    const body = await request.json();
+    const { formula, explode, wildDie, seed, conviction } = body as {
+      formula: string;
+      explode: boolean;
+      wildDie: string | null;
+      seed?: string;
+      conviction: number;
+    };
+
+    // Generate cryptographically secure seed if not provided
+    const rollSeed = seed || this.generateSecureSeed();
+
+    // Create deterministic PRNG from seed
+    const prng = this.createPRNG(rollSeed);
+
+    // Parse dice formula (e.g., "2d6+1", "1d8!!")
+    const parsed = this.parseDiceFormula(formula);
+    if (!parsed) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid dice formula. Use format like "2d6+1" or "1d8!!"',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    const results: number[][] = [];
+    const allRolls: number[] = [];
+
+    // Roll main dice
+    for (let i = 0; i < parsed.count; i++) {
+      const dieRolls = this.rollDie(parsed.sides, explode, prng);
+      results.push(dieRolls);
+      allRolls.push(...dieRolls);
+    }
+
+    // Roll wild die if specified
+    let wildRolls: number[] | undefined;
+    if (wildDie) {
+      const wildSides = parseInt(wildDie.slice(1));
+      wildRolls = this.rollDie(wildSides, explode, prng);
+    }
+
+    // Roll conviction dice (d6 for each point of conviction)
+    const convictionRolls: number[] = [];
+    if (conviction > 0) {
+      for (let i = 0; i < conviction; i++) {
+        const convictionDie = this.rollDie(6, explode, prng);
+        convictionRolls.push(...convictionDie);
+      }
+    }
+
+    // Calculate total
+    const mainTotal = allRolls.reduce((sum, roll) => sum + roll, 0);
+    const wildTotal = wildRolls
+      ? wildRolls.reduce((sum, roll) => sum + roll, 0)
+      : 0;
+    const convictionTotal = convictionRolls.reduce(
+      (sum, roll) => sum + roll,
+      0,
+    );
+
+    const total =
+      (wildRolls ? Math.max(mainTotal, wildTotal) : mainTotal) +
+      convictionTotal +
+      parsed.modifier;
+
+    // Create audit hash
+    const hash = await this.createHash(
+      rollSeed,
+      results,
+      wildRolls,
+      parsed.modifier,
+      convictionRolls,
+    );
+
+    const response = {
+      formula,
+      results,
+      wild: wildRolls,
+      conviction: convictionRolls,
+      modifier: parsed.modifier,
+      total,
+      seed: rollSeed,
+      hash,
+      convictionBonus: convictionTotal,
+    };
+
+    // Log the roll for audit trail
+    await this.logRoll(response);
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        data: response,
+        serverTs: new Date().toISOString(),
+      }),
+      {
+        headers: { 'content-type': 'application/json' },
+      },
+    );
   }
 
   private async logRoll(roll: DiceRoll): Promise<void> {

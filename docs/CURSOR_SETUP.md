@@ -47,7 +47,7 @@ Try these commands in Cursor chat:
 
 ## 🎯 Available Tools
 
-The MCP server provides 20+ tools for comprehensive tabletop gaming:
+The MCP server provides 30+ tools for comprehensive tabletop gaming:
 
 ### Session Management
 
@@ -91,6 +91,20 @@ The MCP server provides 20+ tools for comprehensive tabletop gaming:
 ### Dice Rolling
 
 - `dice.roll` - Roll virtual dice with cryptographic security
+- `dice.rollWithConviction` - Roll dice with Conviction bonuses
+
+### Combat Enhancements
+
+- `combat.setMultiAction` - Set multi-action penalties
+- `combat.createExtrasGroup` - Group Extras for shared initiative
+- `combat.clearMultiAction` - Clear multi-action penalties
+
+### Journal Management
+
+- `journal.addEntry` - Add journal entries (combat, exploration, social, etc.)
+- `journal.addCampaignNote` - Add campaign notes (NPCs, locations, plot, etc.)
+- `journal.search` - Search across journal entries and campaign notes
+- `journal.export` - Export session data to JSON/Markdown
 
 ## 🎮 Example Usage
 
@@ -125,6 +139,30 @@ Create a human fighter named Valeros with:
 Start combat with Valeros and two goblins
 Deal initiative cards to all participants
 Advance to the next turn in combat
+```
+
+### Advanced Combat Features
+
+```
+Set Valeros to take 2 actions this turn (multi-action penalty)
+Group the three goblin Extras to share one initiative card
+Clear multi-action penalties for Valeros
+```
+
+### Journal and Campaign Tracking
+
+```
+Add a journal entry: "Combat Round 3: Valeros deals 8 damage to Goblin Chief"
+Add a campaign note about the NPC "Goblin Chief - wounded, retreating"
+Search for all combat entries involving Valeros
+Export the session data to markdown
+```
+
+### Conviction Bonuses
+
+```
+Roll Fighting with 2 Conviction points (adds 2d6 to the roll)
+Roll damage with Conviction bonus
 ```
 
 ## 🔧 Troubleshooting

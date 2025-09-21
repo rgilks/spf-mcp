@@ -12,12 +12,14 @@
 
 - **Voice-first play**: Players converse with the GM (GPT-5 Voice Mode) without a keyboard
 - **Persistent game state**: PCs, NPCs, powers, edges, hindrances, gear, conditions, Bennies, Conviction, Wounds, Fatigue, Power Points, ammo tracking
-- **Combat engine**: Initiative via Action Deck (including Jokers), Hold/interrupt, turn order, statuses; supports Extras sharing a card and Wild Cards acting individually
+- **Combat engine**: Initiative via Action Deck (including Jokers), Hold/interrupt, turn order, statuses; supports Extras sharing a card and Wild Cards acting individually; multi-action penalties and grouping
 - **Spatial awareness**: Track tokens/miniatures on a gridded battlemap, distances, reach, areas/templates, illumination levels
-- **Dice services**: Cryptographically fair RNG for virtual rolls with audit trails
+- **Dice services**: Cryptographically fair RNG for virtual rolls with audit trails and Conviction bonuses
 - **Multi-party support**: 1–6+ players, remote or co-located; session hand-off and reconnection
 - **Cloudflare-native**: Scalable, low-latency; safe concurrent edits; audit trails
 - **Open protocol**: All game tools exposed via MCP (resources + tools), so any compliant client can drive the game
+- **Journal system**: Adventure logging and campaign note management for complete session tracking
+- **Enhanced combat**: Multi-action penalties, Extras grouping, and Conviction bonuses
 
 ### 1.2 Non-Goals
 

@@ -298,11 +298,152 @@ export const handleMcpManifest = (c: Context<{ Bindings: Env }>) => {
           required: ['formula'],
         },
       },
+      {
+        name: 'dice.rollWithConviction',
+        description:
+          'Roll dice with Conviction bonuses (+d6 per Conviction point).',
+        input_schema: {
+          type: 'object',
+          properties: {
+            formula: { type: 'string' },
+            explode: { type: 'boolean', default: true },
+            wildDie: { type: ['string', 'null'], default: null },
+            seed: { type: ['string', 'null'] },
+            actorId: { type: 'string' },
+            conviction: { type: 'number', default: 0 },
+          },
+          required: ['formula', 'actorId'],
+        },
+      },
+      // Combat enhancements
+      {
+        name: 'combat.setMultiAction',
+        description:
+          'Set multi-action penalties for an actor (-2 per additional action).',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            actorId: { type: 'string' },
+            actions: { type: 'number', minimum: 1, maximum: 3 },
+            description: { type: 'string' },
+          },
+          required: ['sessionId', 'actorId', 'actions', 'description'],
+        },
+      },
+      {
+        name: 'combat.createExtrasGroup',
+        description: 'Create a group of Extras that share initiative cards.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            groupName: { type: 'string' },
+            actorIds: { type: 'array', items: { type: 'string' } },
+            sharedCard: { type: 'boolean', default: true },
+          },
+          required: ['sessionId', 'groupName', 'actorIds'],
+        },
+      },
+      {
+        name: 'combat.clearMultiAction',
+        description: 'Clear multi-action penalties for an actor.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            actorId: { type: 'string' },
+          },
+          required: ['sessionId', 'actorId'],
+        },
+      },
+      // Journal management
+      {
+        name: 'journal.addEntry',
+        description: 'Add a new journal entry for the session.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            entryType: {
+              type: 'string',
+              enum: [
+                'combat',
+                'exploration',
+                'social',
+                'downtime',
+                'narrative',
+              ],
+            },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            actorId: { type: 'string' },
+            location: { type: 'string' },
+            tags: { type: 'array', items: { type: 'string' } },
+            metadata: { type: 'object' },
+          },
+          required: ['sessionId', 'entryType', 'title', 'content'],
+        },
+      },
+      {
+        name: 'journal.addCampaignNote',
+        description: 'Add a campaign note (NPCs, locations, plot, etc.).',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            category: {
+              type: 'string',
+              enum: ['npcs', 'locations', 'plot', 'loot', 'clues'],
+            },
+            title: { type: 'string' },
+            content: { type: 'string' },
+            metadata: { type: 'object' },
+          },
+          required: ['sessionId', 'category', 'title', 'content'],
+        },
+      },
+      {
+        name: 'journal.search',
+        description: 'Search across journal entries and campaign notes.',
+        input_schema: {
+          type: 'object',
+          properties: {
+            sessionId: { type: 'string' },
+            query: { type: 'string' },
+            entryType: {
+              type: 'string',
+              enum: [
+                'combat',
+                'exploration',
+                'social',
+                'downtime',
+                'narrative',
+              ],
+            },
+            category: {
+              type: 'string',
+              enum: ['npcs', 'locations', 'plot', 'loot', 'clues'],
+            },
+            actorId: { type: 'string' },
+            tags: { type: 'array', items: { type: 'string' } },
+            startDate: { type: 'string' },
+            endDate: { type: 'string' },
+          },
+          required: ['sessionId'],
+        },
+      },
     ],
     resources: [
       { name: 'session.get', href: '/mcp/session/{id}' },
       { name: 'actors.list', href: '/mcp/session/{id}/actors' },
       { name: 'combat.state', href: '/mcp/combat/{id}/state' },
+      { name: 'journal.entries', href: '/mcp/journal/{id}/entries' },
+      {
+        name: 'journal.campaignNotes',
+        href: '/mcp/journal/{id}/campaignNotes',
+      },
+      { name: 'journal.export', href: '/mcp/journal/{id}/export' },
     ],
   };
   return c.json(body);

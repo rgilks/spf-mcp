@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { diceRollHandler } from './dice';
+import { diceRollHandler, diceRollWithConvictionHandler } from './dice';
 import {
   sessionCreateHandler,
   sessionLoadHandler,
@@ -26,6 +26,12 @@ import {
   combatStateHandler,
 } from './combat';
 import {
+  combatSetMultiActionHandler,
+  combatCreateExtrasGroupHandler,
+  combatClearMultiActionHandler,
+  combatGetStateHandler,
+} from './combat-enhancements';
+import {
   applyDamageHandler,
   soakRollHandler,
   castPowerHandler,
@@ -36,11 +42,20 @@ import {
   testOfWillHandler,
   commonEdgesHandler,
 } from './support';
+import {
+  journalAddEntryHandler,
+  journalGetEntriesHandler,
+  journalAddCampaignNoteHandler,
+  journalGetCampaignNotesHandler,
+  journalSearchHandler,
+  journalExportHandler,
+} from './journal';
 
 export const mcpToolsRouter = new Hono();
 
 // Dice tools
 mcpToolsRouter.post('/dice.roll', diceRollHandler);
+mcpToolsRouter.post('/dice.rollWithConviction', diceRollWithConvictionHandler);
 
 // Session tools
 mcpToolsRouter.post('/session.create', sessionCreateHandler);
@@ -70,6 +85,15 @@ mcpToolsRouter.post('/combat.advanceTurn', combatAdvanceTurnHandler);
 mcpToolsRouter.post('/combat.endRound', combatEndRoundHandler);
 mcpToolsRouter.get('/combat/:sessionId/state', combatStateHandler);
 
+// Combat enhancement tools
+mcpToolsRouter.post('/combat.setMultiAction', combatSetMultiActionHandler);
+mcpToolsRouter.post(
+  '/combat.createExtrasGroup',
+  combatCreateExtrasGroupHandler,
+);
+mcpToolsRouter.post('/combat.clearMultiAction', combatClearMultiActionHandler);
+mcpToolsRouter.get('/combat/:sessionId/state', combatGetStateHandler);
+
 // Rules tools
 mcpToolsRouter.post('/rules.applyDamage', applyDamageHandler);
 mcpToolsRouter.post('/rules.soakRoll', soakRollHandler);
@@ -80,3 +104,14 @@ mcpToolsRouter.post('/rules.templateArea', templateAreaHandler);
 mcpToolsRouter.post('/support.test', supportTestHandler);
 mcpToolsRouter.post('/support.testOfWill', testOfWillHandler);
 mcpToolsRouter.post('/support.commonEdges', commonEdgesHandler);
+
+// Journal tools
+mcpToolsRouter.post('/journal.addEntry', journalAddEntryHandler);
+mcpToolsRouter.get('/journal/:sessionId/entries', journalGetEntriesHandler);
+mcpToolsRouter.post('/journal.addCampaignNote', journalAddCampaignNoteHandler);
+mcpToolsRouter.get(
+  '/journal/:sessionId/campaignNotes',
+  journalGetCampaignNotesHandler,
+);
+mcpToolsRouter.post('/journal.search', journalSearchHandler);
+mcpToolsRouter.get('/journal/:sessionId/export', journalExportHandler);

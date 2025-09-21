@@ -10,7 +10,7 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 
 ### ✅ Implemented Features
 
-- **Complete MCP Server**: 20+ tools for comprehensive tabletop gaming
+- **Complete MCP Server**: 30+ tools for comprehensive tabletop gaming
 - **Durable Objects**: Session, combat, deck, and RNG management with strong consistency
 - **Authentication**: JWT-based with role-based access control (GM, Player, Observer)
 - **Combat Engine**: Full Action Deck initiative system with Hold/Interrupt mechanics
@@ -18,6 +18,11 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 - **Actor Management**: Complete character sheets with traits, skills, edges, powers
 - **Spatial Tracking**: Battlemap positioning, movement, and area templates
 - **Rules Engine**: Damage calculation, power casting, soak rolls, and support tests
+- **Journal System**: Adventure logging and campaign note management
+- **Multi-Action Support**: Track multi-action penalties (-2 per additional action)
+- **Extras Grouping**: Group Extras to share initiative cards
+- **Conviction Bonuses**: +d6 per Conviction point on dice rolls
+- **Auto-Generated Logs**: System automatically creates journal entries for game events
 - **Test Suite**: 95%+ coverage with unit, integration, and simulation tests
 - **TypeScript**: Full type safety with Zod validation throughout
 
@@ -44,6 +49,10 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 - **Dice Rolling**: Cryptographically secure RNG with audit trails and verification
 - **Spatial Tracking**: Battlemap positioning, movement, facing, and area templates
 - **Resource Management**: Bennies, Power Points, ammunition, conviction tracking
+- **Journal System**: Adventure logging with combat, exploration, social, and narrative entries
+- **Campaign Notes**: Track NPCs, locations, plot points, loot, and clues
+- **Multi-Action Tracking**: Support for 1-3 actions per turn with proper penalties
+- **Extras Grouping**: Group Extras to share initiative cards for faster combat
 
 ### Rules Engine
 
@@ -52,6 +61,9 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 - **Soak Rolls**: Spend Bennies to reduce damage with proper calculations
 - **Support Tests**: Help other characters with skill tests
 - **Area Templates**: Calculate coverage for Small/Medium/Large Burst Templates, Cones, Streams
+- **Conviction Bonuses**: +d6 per Conviction point added to all trait and damage rolls
+- **Multi-Action Penalties**: -2 per additional action (1-3 actions per turn)
+- **Extras Management**: Group Extras to share initiative cards
 
 ### Voice-First Design
 
@@ -262,6 +274,8 @@ const roll = await fetch('https://your-worker.workers.dev/mcp/tool/dice.roll', {
 - **actors**: Character and creature data
 - **deck_states**: Action Deck state per session
 - **action_logs**: Audit trail for all game actions
+- **journal_entries**: Adventure journal entries (combat, exploration, social, etc.)
+- **campaign_notes**: Campaign information (NPCs, locations, plot, loot, clues)
 
 ### MCP Tools
 
@@ -294,6 +308,20 @@ const roll = await fetch('https://your-worker.workers.dev/mcp/tool/dice.roll', {
 **Dice & RNG:**
 
 - `dice.roll` - Roll virtual dice with exploding, wild die, audit trail
+- `dice.rollWithConviction` - Roll dice with Conviction bonuses (+d6 per point)
+
+**Combat Enhancements:**
+
+- `combat.setMultiAction` - Set multi-action penalties for an actor
+- `combat.createExtrasGroup` - Create group of Extras sharing initiative
+- `combat.clearMultiAction` - Clear multi-action penalties
+
+**Journal Management:**
+
+- `journal.addEntry` - Add journal entry (combat, exploration, social, etc.)
+- `journal.addCampaignNote` - Add campaign note (NPCs, locations, plot, etc.)
+- `journal.search` - Search across journal entries and campaign notes
+- `journal.export` - Export session data to JSON/Markdown
 
 **Rules Engine:**
 
@@ -463,6 +491,22 @@ The server exposes a complete MCP manifest at `/mcp/manifest` with all available
 ### Dice Rolling
 
 - `POST /mcp/tool/dice.roll` - Roll dice with audit trail
+- `POST /mcp/tool/dice.rollWithConviction` - Roll dice with Conviction bonuses
+
+### Combat Enhancements
+
+- `POST /mcp/tool/combat.setMultiAction` - Set multi-action penalties
+- `POST /mcp/tool/combat.createExtrasGroup` - Create Extras group
+- `POST /mcp/tool/combat.clearMultiAction` - Clear multi-action penalties
+
+### Journal Management
+
+- `POST /mcp/tool/journal.addEntry` - Add journal entry
+- `POST /mcp/tool/journal.addCampaignNote` - Add campaign note
+- `POST /mcp/tool/journal.search` - Search entries and notes
+- `GET /mcp/journal/:id/entries` - Get journal entries
+- `GET /mcp/journal/:id/campaignNotes` - Get campaign notes
+- `GET /mcp/journal/:id/export` - Export session data
 
 ## 🔒 Security & Privacy
 
