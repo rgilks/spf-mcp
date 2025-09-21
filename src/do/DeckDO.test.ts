@@ -300,7 +300,7 @@ describe('DeckDO', () => {
       });
       await deckDO.fetch(resetRequest);
 
-      const dealRequest = new Request('http/deck/deal', {
+      const dealRequest = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

@@ -339,7 +339,7 @@ describe('CombatDO', () => {
       });
       await combatDO.fetch(startRequest);
 
-      const dealRequest = new Request('http/combat/deal', {
+      const dealRequest = new Request('http://combat/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({

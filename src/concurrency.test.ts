@@ -67,7 +67,7 @@ describe('Concurrency Tests', () => {
       const advanceRequests = Array.from(
         { length: 5 },
         () =>
-          new Request('http/combat/advanceTurn', {
+          new Request('http://combat/advanceTurn', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -169,7 +169,7 @@ describe('Concurrency Tests', () => {
       });
       await combatDO.fetch(startRequest);
 
-      const dealRequest = new Request('http/combat/deal', {
+      const dealRequest = new Request('http://combat/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -179,7 +179,7 @@ describe('Concurrency Tests', () => {
       });
       await combatDO.fetch(dealRequest);
 
-      const holdRequest = new Request('http/combat/hold', {
+      const holdRequest = new Request('http://combat/hold', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -301,7 +301,7 @@ describe('Concurrency Tests', () => {
       });
       await deckDO.fetch(resetRequest);
 
-      const dealRequest = new Request('http/deck/deal', {
+      const dealRequest = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -565,7 +565,7 @@ describe('Concurrency Tests', () => {
       await combatDO.fetch(startRequest);
 
       // Deal cards
-      const dealRequest = new Request('http/combat/deal', {
+      const dealRequest = new Request('http://combat/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -579,7 +579,7 @@ describe('Concurrency Tests', () => {
       const rapidRequests = Array.from(
         { length: 10 },
         () =>
-          new Request('http/combat/advanceTurn', {
+          new Request('http://combat/advanceTurn', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({

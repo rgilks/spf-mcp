@@ -219,7 +219,7 @@ describe('Performance Tests', () => {
 
       const dealPromises = Array.from({ length: numDeals }, (_, i) =>
         deckDO.fetch(
-          new Request('http/deck/deal', {
+          new Request('http://deck/deal', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -262,7 +262,7 @@ describe('Performance Tests', () => {
       const numParticipants = 20;
       const startTime = Date.now();
 
-      const dealRequest = new Request('http/deck/deal', {
+      const dealRequest = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -315,7 +315,7 @@ describe('Performance Tests', () => {
 
     it('should handle rapid turn advancement efficiently', async () => {
       // Start combat
-      const startRequest = new Request('http/combat/start', {
+      const startRequest = new Request('http://combat/start', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -326,7 +326,7 @@ describe('Performance Tests', () => {
       await combatDO.fetch(startRequest);
 
       // Deal cards
-      const dealRequest = new Request('http/combat/deal', {
+      const dealRequest = new Request('http://combat/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -374,7 +374,7 @@ describe('Performance Tests', () => {
       const numParticipants = 50;
       const startTime = Date.now();
 
-      const startRequest = new Request('http/combat/start', {
+      const startRequest = new Request('http://combat/start', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
@@ -442,7 +442,7 @@ describe('Performance Tests', () => {
       let rollCount = 0;
 
       while (Date.now() - startTime < duration) {
-        const request = new Request('http/rng/roll', {
+        const request = new Request('http://rng/roll', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({
@@ -474,7 +474,7 @@ describe('Performance Tests', () => {
 
       const rollPromises = Array.from({ length: burstSize }, () =>
         rngDO.fetch(
-          new Request('http/rng/roll', {
+          new Request('http://rng/roll', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
@@ -515,7 +515,7 @@ describe('Performance Tests', () => {
       for (let i = 0; i < 100; i++) {
         const startTime = Date.now();
 
-        const request = new Request('http/rng/roll', {
+        const request = new Request('http://rng/roll', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
           body: JSON.stringify({

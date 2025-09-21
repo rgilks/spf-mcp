@@ -499,7 +499,7 @@ describe('SessionDO', () => {
 
   describe('handleMoveActor', () => {
     it('should move actor to new position', async () => {
-      const request = new Request('http/session/actor/move', {
+      const request = new Request('http://session/actor/move', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
