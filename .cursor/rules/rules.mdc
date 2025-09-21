@@ -13,6 +13,8 @@ alwaysApply: true
 - Watch mode requires manual intervention to stop and can block the terminal
 - Use `npm test` for running tests (single-run mode)
 - Use `npm run test:coverage` for coverage reports
+- NEVER use `__tests__` folders - put tests alongside the files they test
+- Place test files next to the source files they test (e.g., `src/do/CombatDO.test.ts`)
 
 ## Code Style
 
@@ -20,6 +22,9 @@ alwaysApply: true
 - Follow TypeScript best practices
 - Use meaningful variable and function names
 - Add JSDoc comments for complex functions
+- AVOID using TypeScript classes where possible - prefer functions and objects
+- Use functional programming patterns and composition over inheritance
+- Prefer interfaces and types over classes for data structures
 
 ## Architecture Guidelines
 
@@ -27,13 +32,16 @@ alwaysApply: true
 - Use Zod schemas for all input/output validation
 - Maintain separation between MCP tools and business logic
 - Follow the established patterns for error handling
+- Minimize class usage - use functions and objects instead
+- Prefer composition over inheritance
 
 ## File Organization
 
 - Keep related functionality grouped together
 - Use descriptive file and directory names
-- Maintain clear separation between tests and source code
+- Place test files alongside the source files they test
 - Follow the established project structure
+- Avoid `__tests__` directories - use `.test.ts` files next to source
 
 ## Git Practices
 

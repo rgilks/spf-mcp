@@ -217,9 +217,9 @@ const roll = await fetch('https://your-worker.workers.dev/mcp/tool/dice.roll', {
 npm test
 
 # Run specific test suites
-npm test src/do/__tests__/RngDO.test.ts
-npm test src/__tests__/integration.test.ts
-npm test src/__tests__/simulation.test.ts
+npm test src/do/RngDO.test.ts
+npm test src/integration.test.ts
+npm test src/simulation.test.ts
 
 # Run demo
 node demo.js
