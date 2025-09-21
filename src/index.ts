@@ -37,7 +37,7 @@ const app = new Hono<{ Bindings: Env }>();
 
 // Apply security middleware
 app.use('*', secureCors);
-app.use('*', sanitizeInput);
+app.use('*', sanitizeInput as any);
 
 // Public endpoints (no auth required)
 app.get('/healthz', async (c) => {
@@ -84,18 +84,18 @@ app.route('/', authRouter);
 const authMiddlewareToUse =
   process.env.NODE_ENV === 'test' ? testAuthMiddleware : authMiddleware;
 
-app.use('/mcp/tool/*', authMiddlewareToUse);
+app.use('/mcp/tool/*', authMiddlewareToUse as any);
 app.use('/mcp/tool/session.*', sessionRateLimit);
 app.use('/mcp/tool/dice.*', diceRateLimit);
 app.use('/mcp/tool/combat.*', combatRateLimit);
 
 // Apply role-based access control (skip in test environment)
 if (process.env.NODE_ENV !== 'test') {
-  app.use('/mcp/tool/session.create', requireRole('gm'));
-  app.use('/mcp/tool/session.update', requireRole('gm'));
-  app.use('/mcp/tool/session.end', requireRole('gm'));
-  app.use('/mcp/tool/combat.*', requireRole('gm'));
-  app.use('/mcp/tool/*', requireSessionAccess);
+  app.use('/mcp/tool/session.create', requireRole('gm') as any);
+  app.use('/mcp/tool/session.update', requireRole('gm') as any);
+  app.use('/mcp/tool/session.end', requireRole('gm') as any);
+  app.use('/mcp/tool/combat.*', requireRole('gm') as any);
+  app.use('/mcp/tool/*', requireSessionAccess as any);
 }
 
 app.route('/mcp/tool', mcpToolsRouter);

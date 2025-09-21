@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DeckDO } from './DeckDO';
 
 // Mock environment
-const mockEnv = {};
+const mockEnv = {} as any;
 
 const createDeckDO = () => {
   const mockStorage = new Map<string, any>();

@@ -469,7 +469,12 @@ export class SessionDO {
       }),
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: unknown;
+      error?: string;
+      serverTs?: string;
+    };
 
     return new Response(
       JSON.stringify({

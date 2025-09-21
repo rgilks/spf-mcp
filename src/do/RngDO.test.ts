@@ -12,7 +12,7 @@ const mockState = {
 };
 
 // Mock environment
-const mockEnv = {};
+const mockEnv = {} as any;
 
 describe('RngDO', () => {
   let rngDO: RngDO;

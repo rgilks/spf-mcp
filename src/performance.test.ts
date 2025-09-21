@@ -13,7 +13,7 @@ const mockState = {
   },
 };
 
-const mockEnv = {};
+const mockEnv = {} as any;
 
 describe('Performance Tests', () => {
   describe('RngDO Performance', () => {
@@ -329,7 +329,7 @@ describe('Performance Tests', () => {
           }),
           idFromName: vi.fn(),
         },
-      };
+      } as any;
 
       combatDO = new CombatDO(mockState as any, mockDeckEnv);
 

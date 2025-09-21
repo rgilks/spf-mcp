@@ -87,7 +87,7 @@ const mockEnv = {
     }),
     idFromName: vi.fn(),
   },
-};
+} as any;
 
 describe('Concurrency Tests', () => {
   describe('CombatDO Concurrency', () => {

@@ -12,7 +12,7 @@ const mockState = {
   },
 };
 
-const mockEnv = {};
+const mockEnv = {} as any;
 
 describe('Property-Based Tests', () => {
   describe('RNG Fairness Tests', () => {

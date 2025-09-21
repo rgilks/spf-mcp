@@ -22,7 +22,12 @@ export async function sessionCreateHandler(c: Context<{ Bindings: Env }>) {
       }),
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: unknown;
+      error?: string;
+      serverTs?: string;
+    };
 
     if (!result.success) {
       return c.json(
@@ -30,7 +35,7 @@ export async function sessionCreateHandler(c: Context<{ Bindings: Env }>) {
           success: false,
           error: result.error,
         },
-        response.status,
+        response.status as 400 | 500,
       );
     }
 
@@ -82,7 +87,12 @@ export async function sessionLoadHandler(c: Context<{ Bindings: Env }>) {
       }),
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: unknown;
+      error?: string;
+      serverTs?: string;
+    };
 
     if (!result.success) {
       return c.json(
@@ -90,7 +100,7 @@ export async function sessionLoadHandler(c: Context<{ Bindings: Env }>) {
           success: false,
           error: result.error,
         },
-        response.status,
+        response.status as 400 | 500,
       );
     }
 
@@ -136,7 +146,12 @@ export async function sessionUpdateHandler(c: Context<{ Bindings: Env }>) {
       }),
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: unknown;
+      error?: string;
+      serverTs?: string;
+    };
 
     if (!result.success) {
       return c.json(
@@ -144,7 +159,7 @@ export async function sessionUpdateHandler(c: Context<{ Bindings: Env }>) {
           success: false,
           error: result.error,
         },
-        response.status,
+        response.status as 400 | 500,
       );
     }
 
@@ -213,7 +228,12 @@ export async function sessionEndHandler(c: Context<{ Bindings: Env }>) {
       }),
     );
 
-    const result = await response.json();
+    const result = (await response.json()) as {
+      success: boolean;
+      data?: unknown;
+      error?: string;
+      serverTs?: string;
+    };
 
     if (!result.success) {
       return c.json(
@@ -221,7 +241,7 @@ export async function sessionEndHandler(c: Context<{ Bindings: Env }>) {
           success: false,
           error: result.error,
         },
-        response.status,
+        response.status as 400 | 500,
       );
     }
 

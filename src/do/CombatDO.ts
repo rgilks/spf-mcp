@@ -113,7 +113,16 @@ export class CombatDO {
       }),
     );
 
-    const dealResult = await dealResponse.json();
+    const dealResult = (await dealResponse.json()) as {
+      success: boolean;
+      data?: {
+        dealt: Record<string, InitiativeCard>;
+        jokerBonuses?: Record<string, unknown>;
+        jokerDealt?: boolean;
+      };
+      error?: string;
+    };
+
     if (!dealResult.success) {
       return new Response(
         JSON.stringify({
@@ -127,7 +136,7 @@ export class CombatDO {
     // Sort participants by card value (highest first)
     const sortedParticipants = this.sortByCardValue(
       combatState.participants,
-      dealResult.data.dealt,
+      dealResult.data!.dealt,
     );
 
     // Update combat state
@@ -144,10 +153,10 @@ export class CombatDO {
         success: true,
         data: {
           ...combatState,
-          dealt: dealResult.data.dealt,
+          dealt: dealResult.data!.dealt,
           turnOrder: sortedParticipants,
-          jokerBonuses: dealResult.data.jokerBonuses,
-          jokerDealt: dealResult.data.jokerDealt,
+          jokerBonuses: dealResult.data!.jokerBonuses,
+          jokerDealt: dealResult.data!.jokerDealt,
         },
         serverTs: new Date().toISOString(),
       }),
@@ -329,7 +338,14 @@ export class CombatDO {
     const deckResponse = await deckDO.fetch(
       new Request('http://deck/state', { method: 'GET' }),
     );
-    const deckResult = await deckResponse.json();
+    const deckResult = (await deckResponse.json()) as {
+      success: boolean;
+      data?: {
+        dealt: Record<string, InitiativeCard>;
+        lastJokerRound: number;
+      };
+      error?: string;
+    };
 
     if (!deckResult.success) {
       return new Response(
@@ -341,7 +357,7 @@ export class CombatDO {
       );
     }
 
-    const dealt = deckResult.data.dealt;
+    const dealt = deckResult.data!.dealt;
     const sortedParticipants = this.sortByCardValue(
       combatState.participants,
       dealt,
@@ -434,10 +450,15 @@ export class CombatDO {
     const deckResponse = await deckDO.fetch(
       new Request('http://deck/state', { method: 'GET' }),
     );
-    const deckResult = await deckResponse.json();
+    const deckResult = (await deckResponse.json()) as {
+      success: boolean;
+      data?: {
+        lastJokerRound: number;
+      };
+    };
 
     if (deckResult.success) {
-      const deckState = deckResult.data;
+      const deckState = deckResult.data!;
       if (deckState.lastJokerRound === combatState.round) {
         // Shuffle deck for next round
         await deckDO.fetch(
