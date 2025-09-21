@@ -7,73 +7,111 @@
 
 const DEPLOYED_URL = 'https://spf-mcp.rob-gilks.workers.dev';
 
-console.log('🎲 SPF MCP Server Live Demo');
-console.log('============================');
-console.log(`Deployed at: ${DEPLOYED_URL}\n`);
-
-async function makeRequest(endpoint, options = {}) {
-  const url = `${DEPLOYED_URL}${endpoint}`;
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  const contentType = response.headers.get('content-type');
-  let data;
-
-  if (contentType && contentType.includes('application/json')) {
-    data = await response.json();
-  } else {
-    data = await response.text();
+// Simple HTTP client
+class HttpClient {
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
   }
 
-  return { response, data };
+  async makeRequest(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+      ...options,
+    });
+
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
+
+    return { response, data };
+  }
+
+  async post(endpoint, body, options = {}) {
+    return this.makeRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      ...options,
+    });
+  }
+
+  async get(endpoint, options = {}) {
+    return this.makeRequest(endpoint, {
+      method: 'GET',
+      ...options,
+    });
+  }
 }
+
+// Simple logger
+const logger = {
+  success: (msg) => console.log(`✅ ${msg}`),
+  error: (msg) => console.log(`❌ ${msg}`),
+  info: (msg) => console.log(`ℹ️  ${msg}`),
+  warning: (msg) => console.log(`⚠️  ${msg}`),
+  dice: (msg) => console.log(`🎲 ${msg}`),
+  performance: (msg) => console.log(`⚡ ${msg}`),
+  security: (msg) => console.log(`🔐 ${msg}`),
+  section: (title) => {
+    console.log(`\n${title}`);
+    console.log('='.repeat(title.length));
+  },
+  subsection: (title) => {
+    console.log(`\n${title}`);
+    console.log('-'.repeat(title.length));
+  },
+  item: (msg) => console.log(`   • ${msg}`),
+  kv: (key, value) => console.log(`   ${key}: ${value}`),
+  metric: (label, value, unit) =>
+    console.log(`   📊 ${label}: ${value}${unit ? ` ${unit}` : ''}`),
+};
+
+const client = new HttpClient(DEPLOYED_URL);
+
+logger.section('🎲 SPF MCP Server Live Demo');
+logger.info(`Deployed at: ${DEPLOYED_URL}`);
 
 async function runDemo() {
   try {
-    console.log('🚀 Starting Live Demo...\n');
+    logger.info('Starting Live Demo...');
 
     // 1. Show MCP Tools Available
-    console.log('1️⃣ Available MCP Tools:');
-    console.log('=======================');
-    const { data: manifest } = await makeRequest('/mcp/manifest');
+    logger.subsection('1️⃣ Available MCP Tools');
+    const { data: manifest } = await client.get('/mcp/manifest');
     if (manifest && manifest.tools) {
       manifest.tools.forEach((tool) => {
-        console.log(`   🔧 ${tool.name}: ${tool.description}`);
+        logger.item(`🔧 ${tool.name}: ${tool.description}`);
       });
     }
-    console.log(
-      `   📊 Total: ${manifest.tools?.length || 0} tools available\n`,
-    );
+    logger.metric('Total tools available', manifest.tools?.length || 0);
 
     // 2. Create a Game Session
-    console.log('2️⃣ Creating Game Session:');
-    console.log('==========================');
-    const { data: sessionData } = await makeRequest(
+    logger.subsection('2️⃣ Creating Game Session');
+    const { data: sessionData } = await client.post(
       '/mcp/tool/session.create',
       {
-        method: 'POST',
-        body: JSON.stringify({
-          name: 'Live Demo Session',
-          grid: { unit: 'inch', scale: 1.0, cols: 20, rows: 20 },
-          illumination: 'bright',
-        }),
+        name: 'Live Demo Session',
+        grid: { unit: 'inch', scale: 1.0, cols: 20, rows: 20 },
+        illumination: 'bright',
       },
     );
 
     if (sessionData.success) {
       const sessionId = sessionData.data.sessionId;
-      console.log(`   ✅ Session created: ${sessionData.data.sessionId}`);
-      console.log(`   📝 Session name: "Live Demo Session"`);
-      console.log(`   🗺️  Grid: 20x20 inches, bright lighting\n`);
+      logger.success(`Session created: ${sessionData.data.sessionId}`);
+      logger.kv('Session name', 'Live Demo Session');
+      logger.kv('Grid', '20x20 inches, bright lighting');
 
       // 3. Demonstrate Dice Rolling
-      console.log('3️⃣ Dice Rolling System:');
-      console.log('=======================');
+      logger.subsection('3️⃣ Dice Rolling System');
 
       const diceRolls = [
         { formula: '1d20', description: 'D20 roll (attack, skill check)' },
@@ -84,38 +122,31 @@ async function runDemo() {
       ];
 
       for (const roll of diceRolls) {
-        const { data: rollData } = await makeRequest('/mcp/tool/dice.roll', {
-          method: 'POST',
-          body: JSON.stringify({
-            sessionId,
-            formula: roll.formula,
-            explode: false,
-          }),
+        const { data: rollData } = await client.post('/mcp/tool/dice.roll', {
+          sessionId,
+          formula: roll.formula,
+          explode: false,
         });
 
         if (rollData.success) {
           const results = rollData.data.results.flat();
-          console.log(
-            `   🎲 ${roll.formula}: ${results.join(', ')} = ${rollData.data.total} (${roll.description})`,
+          logger.dice(
+            `${roll.formula}: ${results.join(', ')} = ${rollData.data.total} (${roll.description})`,
           );
         }
       }
 
       // 4. Performance Demonstration
-      console.log('\n4️⃣ Performance Test:');
-      console.log('====================');
+      logger.subsection('4️⃣ Performance Test');
       const startTime = Date.now();
       const promises = [];
 
       for (let i = 0; i < 20; i++) {
         promises.push(
-          makeRequest('/mcp/tool/dice.roll', {
-            method: 'POST',
-            body: JSON.stringify({
-              sessionId,
-              formula: '1d20',
-              explode: false,
-            }),
+          client.post('/mcp/tool/dice.roll', {
+            sessionId,
+            formula: '1d20',
+            explode: false,
           }),
         );
       }
@@ -125,54 +156,50 @@ async function runDemo() {
       const duration = endTime - startTime;
 
       const successCount = results.filter((r) => r.data.success).length;
-      console.log(`   ⚡ Completed 20 dice rolls in ${duration}ms`);
-      console.log(`   📈 Average: ${(duration / 20).toFixed(1)}ms per roll`);
-      console.log(
-        `   ✅ Success rate: ${successCount}/20 (${((successCount / 20) * 100).toFixed(1)}%)`,
+      logger.performance(`Completed 20 dice rolls in ${duration}ms`);
+      logger.metric('Average time per roll', `${(duration / 20).toFixed(1)}ms`);
+      logger.metric(
+        'Success rate',
+        `${successCount}/20 (${((successCount / 20) * 100).toFixed(1)}%)`,
       );
 
       // 5. Show Cryptographic Security
-      console.log('\n5️⃣ Cryptographic Security:');
-      console.log('===========================');
-      const { data: secureRoll } = await makeRequest('/mcp/tool/dice.roll', {
-        method: 'POST',
-        body: JSON.stringify({
-          sessionId,
-          formula: '1d20',
-          explode: false,
-        }),
+      logger.subsection('5️⃣ Cryptographic Security');
+      const { data: secureRoll } = await client.post('/mcp/tool/dice.roll', {
+        sessionId,
+        formula: '1d20',
+        explode: false,
       });
 
       if (secureRoll.success) {
-        console.log(`   🔐 Cryptographic seed: ${secureRoll.data.seed}`);
-        console.log(
-          `   🔒 Verification hash: ${secureRoll.data.hash.substring(0, 16)}...`,
+        logger.security(`Cryptographic seed: ${secureRoll.data.seed}`);
+        logger.security(
+          `Verification hash: ${secureRoll.data.hash.substring(0, 16)}...`,
         );
-        console.log(`   🛡️  Results are verifiable and tamper-proof`);
+        logger.security('Results are verifiable and tamper-proof');
       }
     } else {
-      console.log('   ❌ Session creation failed');
+      logger.error('Session creation failed');
     }
 
-    console.log('\n🎉 Demo Complete!');
-    console.log('=================');
-    console.log('✅ Working Features:');
-    console.log('   • MCP Protocol compliance');
-    console.log('   • Session management');
-    console.log('   • Cryptographically secure dice rolling');
-    console.log('   • High performance (sub-10ms response times)');
-    console.log('   • Cloudflare global edge deployment');
-    console.log('   • Audit trail and verification');
+    logger.section('🎉 Demo Complete!');
+    logger.success('Working Features:');
+    logger.item('MCP Protocol compliance');
+    logger.item('Session management');
+    logger.item('Cryptographically secure dice rolling');
+    logger.item('High performance (sub-10ms response times)');
+    logger.item('Cloudflare global edge deployment');
+    logger.item('Audit trail and verification');
 
-    console.log('\n🚧 Known Issues (being addressed):');
-    console.log('   • Actor creation (database schema)');
-    console.log('   • Combat system (depends on actors)');
-    console.log('   • Session loading (routing)');
+    logger.warning('Known Issues (being addressed):');
+    logger.item('Actor creation (database schema)');
+    logger.item('Combat system (depends on actors)');
+    logger.item('Session loading (routing)');
 
-    console.log('\n🌟 The core game engine is live and functional!');
-    console.log(`🌐 Try it yourself: ${DEPLOYED_URL}/mcp/manifest`);
+    logger.info('The core game engine is live and functional!');
+    logger.info(`Try it yourself: ${DEPLOYED_URL}/mcp/manifest`);
   } catch (error) {
-    console.error('❌ Demo failed:', error.message);
+    logger.error(`Demo failed: ${error.message}`);
   }
 }
 

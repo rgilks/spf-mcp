@@ -5,10 +5,57 @@
  * Connects Cursor to the deployed SPF MCP server
  */
 
+// Simple HTTP client
+class HttpClient {
+  constructor(baseUrl, authToken) {
+    this.baseUrl = baseUrl;
+    this.authToken = authToken;
+  }
+
+  async makeRequest(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers,
+    };
+
+    if (this.authToken) {
+      headers.Authorization = `Bearer ${this.authToken}`;
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    const contentType = response.headers.get('content-type');
+    let data;
+
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json();
+    } else {
+      data = await response.text();
+    }
+
+    return { response, data };
+  }
+}
+
+// Simple logger
+const logger = {
+  success: (msg) => console.log(`✅ ${msg}`),
+  error: (msg) => console.log(`❌ ${msg}`),
+  info: (msg) => console.log(`ℹ️  ${msg}`),
+  warning: (msg) => console.log(`⚠️  ${msg}`),
+};
+
 const SERVER_URL =
   process.env.SPF_SERVER_URL || 'https://spf-mcp.rob-gilks.workers.dev';
 const API_KEY = process.env.API_KEY || 'your-api-key-for-mcp-clients';
 const JWT_TOKEN = process.env.JWT_TOKEN || null;
+
+// Note: client will be created per request with auth token
 
 // Simple JSON-RPC handler
 process.stdin.setEncoding('utf8');
@@ -58,39 +105,22 @@ async function getAuthToken() {
       throw new Error(`Auth failed: ${data.error}`);
     }
 
-    console.error('🔑 Generated new JWT token for MCP client');
+    logger.info('Generated new JWT token for MCP client');
     return data.data.token;
   } catch (error) {
-    console.error('❌ Failed to generate auth token:', error.message);
+    logger.error(`Failed to generate auth token: ${error.message}`);
     throw error;
   }
 }
 
 async function makeRequest(endpoint, options = {}) {
-  const url = `${SERVER_URL}${endpoint}`;
-
   // Get auth token
   const token = await getAuthToken();
 
-  const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-    ...options,
-  });
+  // Create authenticated client
+  const authenticatedClient = new HttpClient(SERVER_URL, token);
 
-  const contentType = response.headers.get('content-type');
-  let data;
-
-  if (contentType && contentType.includes('application/json')) {
-    data = await response.json();
-  } else {
-    data = await response.text();
-  }
-
-  return { response, data };
+  return authenticatedClient.makeRequest(endpoint, options);
 }
 
 async function handleMessage(message) {
@@ -191,7 +221,7 @@ async function handleMessage(message) {
 
     console.log(JSON.stringify(response));
   } catch (error) {
-    console.error(`Error handling message: ${error.message}`, {
+    logger.error(`Error handling message: ${error.message}`, {
       error: error.stack,
     });
 
@@ -282,4 +312,4 @@ async function handleToolCall(toolName, args) {
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
-console.error('🎲 Savage Pathfinder MCP Proxy started');
+logger.info('Savage Pathfinder MCP Proxy started');
