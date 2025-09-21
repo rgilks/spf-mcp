@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 
 export class DeckDO {
   state: DurableObjectState;
-  env: any;
+  env: Record<string, unknown>;
 
-  constructor(state: DurableObjectState, env: any) {
+  constructor(state: DurableObjectState, env: Record<string, unknown>) {
     this.state = state;
     this.env = env;
   }
@@ -42,13 +42,16 @@ export class DeckDO {
   }
 
   private async handleReset(request: Request): Promise<Response> {
-    const body = await request.json();
-    const { useJokers = true } = body as any;
+    const body = (await request.json()) as {
+      useJokers?: boolean;
+      sessionId?: string;
+    };
+    const { useJokers = true } = body;
 
     const deck = this.createStandardDeck(useJokers);
     const deckState: DeckState = {
       id: uuidv4(),
-      sessionId: (body as any).sessionId || 'system',
+      sessionId: body.sessionId || 'system',
       cards: deck,
       discard: [],
       dealt: {},
@@ -71,8 +74,12 @@ export class DeckDO {
   }
 
   private async handleDeal(request: Request): Promise<Response> {
-    const body = await request.json();
-    const { to, extra = {} } = body as any;
+    const body = (await request.json()) as {
+      to: string[];
+      extra?: Record<string, number>;
+      round?: number;
+    };
+    const { to, extra = {}, round = 0 } = body;
 
     const deckState = await this.getDeckState();
     if (!deckState) {
@@ -86,6 +93,7 @@ export class DeckDO {
     }
 
     const dealt: Record<string, InitiativeCard> = {};
+    let jokerDealt = false;
 
     // Deal cards to each actor
     for (const actorId of to) {
@@ -94,9 +102,15 @@ export class DeckDO {
         await this.shuffleDeck(deckState);
       }
 
-      const card = deckState.cards.pop()!;
+      const card = deckState.cards.pop();
+      if (!card) throw new Error('No cards available');
       dealt[actorId] = card;
       deckState.dealt[actorId] = card;
+
+      // Track if a Joker was dealt
+      if (card.rank === 'Joker') {
+        jokerDealt = true;
+      }
 
       // Handle extra draws (e.g., Level Headed Edge)
       const extraDraws = extra[actorId] || 0;
@@ -104,7 +118,14 @@ export class DeckDO {
         if (deckState.cards.length === 0) {
           await this.shuffleDeck(deckState);
         }
-        const extraCard = deckState.cards.pop()!;
+        const extraCard = deckState.cards.pop();
+        if (!extraCard) throw new Error('No cards available for extra draw');
+
+        // Track if extra draw was a Joker
+        if (extraCard.rank === 'Joker') {
+          jokerDealt = true;
+        }
+
         // Keep the better card (higher rank)
         if (this.compareCards(extraCard, dealt[actorId]) > 0) {
           deckState.discard.push(dealt[actorId]);
@@ -116,13 +137,22 @@ export class DeckDO {
       }
     }
 
+    // Update lastJokerRound if a Joker was dealt this round
+    if (jokerDealt) {
+      deckState.lastJokerRound = round;
+    }
+
     deckState.updatedAt = new Date();
     await this.state.storage.put('deckState', deckState);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: { dealt },
+        data: {
+          dealt,
+          jokerDealt,
+          jokerBonuses: this.calculateJokerBonuses(dealt),
+        },
         serverTs: new Date().toISOString(),
       }),
       {
@@ -132,8 +162,8 @@ export class DeckDO {
   }
 
   private async handleRecall(request: Request): Promise<Response> {
-    const body = await request.json();
-    const { actorId } = body as any;
+    const body = (await request.json()) as { actorId: string };
+    const { actorId } = body;
 
     const deckState = await this.getDeckState();
     if (!deckState) {
@@ -176,7 +206,7 @@ export class DeckDO {
     );
   }
 
-  private async handleGetState(request: Request): Promise<Response> {
+  private async handleGetState(_request: Request): Promise<Response> {
     const deckState = await this.getDeckState();
     if (!deckState) {
       return new Response(
@@ -307,6 +337,36 @@ export class DeckDO {
     const bSuitIndex = suitOrder.indexOf(b.suit || '');
 
     return bSuitIndex - aSuitIndex; // Higher suit wins
+  }
+
+  private calculateJokerBonuses(
+    dealt: Record<string, InitiativeCard>,
+  ): Record<
+    string,
+    { traitBonus: number; damageBonus: number; canActAnytime: boolean }
+  > {
+    const bonuses: Record<
+      string,
+      { traitBonus: number; damageBonus: number; canActAnytime: boolean }
+    > = {};
+
+    for (const [actorId, card] of Object.entries(dealt)) {
+      if (card.rank === 'Joker') {
+        bonuses[actorId] = {
+          traitBonus: 2,
+          damageBonus: 2,
+          canActAnytime: true,
+        };
+      } else {
+        bonuses[actorId] = {
+          traitBonus: 0,
+          damageBonus: 0,
+          canActAnytime: false,
+        };
+      }
+    }
+
+    return bonuses;
   }
 
   private async getDeckState(): Promise<DeckState | null> {

@@ -101,6 +101,7 @@ export class CombatDO {
         body: JSON.stringify({
           to: combatState.participants,
           extra: extraDraws,
+          round: combatState.round + 1, // Pass the round number for Joker tracking
         }),
       }),
     );
@@ -138,6 +139,8 @@ export class CombatDO {
           ...combatState,
           dealt: dealResult.data.dealt,
           turnOrder: sortedParticipants,
+          jokerBonuses: dealResult.data.jokerBonuses,
+          jokerDealt: dealResult.data.jokerDealt,
         },
         serverTs: new Date().toISOString(),
       }),
@@ -193,7 +196,12 @@ export class CombatDO {
 
   private async handleInterrupt(request: Request): Promise<Response> {
     const body = await request.json();
-    const { sessionId, actorId, targetActorId } = body as any;
+    const {
+      sessionId,
+      actorId,
+      targetActorId,
+      interruptType = 'general',
+    } = body as any;
 
     const combatState = await this.getCombatState();
     if (!combatState) {
@@ -216,17 +224,53 @@ export class CombatDO {
       );
     }
 
+    // Validate interrupt timing - can only interrupt during specific actions
+    if (
+      combatState.status !== 'turn_active' &&
+      combatState.status !== 'on_hold'
+    ) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Cannot interrupt at this time - no active turn',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
+    // Check if target is valid for interrupt
+    if (targetActorId && !combatState.participants.includes(targetActorId)) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Invalid target for interrupt',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
     // Remove from hold and make active
     combatState.hold = combatState.hold.filter((id) => id !== actorId);
     combatState.activeActorId = actorId;
     combatState.status = 'turn_active';
+
+    // Store interrupt context for potential opposed rolls
+    combatState.interruptContext = {
+      interrupter: actorId,
+      target: targetActorId,
+      type: interruptType,
+      timestamp: new Date().toISOString(),
+    };
 
     await this.state.storage.put('combatState', combatState);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: combatState,
+        data: {
+          ...combatState,
+          interruptContext: combatState.interruptContext,
+        },
         serverTs: new Date().toISOString(),
       }),
       {

@@ -224,6 +224,224 @@ export async function actorApplyEffectHandler(c: any) {
   }
 }
 
+export async function actorSpendBennyHandler(c: any) {
+  try {
+    const body = await c.req.json();
+    const { sessionId, actorId, purpose } = body;
+
+    if (!sessionId || !actorId) {
+      return c.json(
+        {
+          success: false,
+          error: 'sessionId and actorId required',
+        },
+        400,
+      );
+    }
+
+    // Get Session Durable Object
+    const sessionDO = c.env.SessionDO.get(c.env.SessionDO.idFromName('global'));
+
+    // Get current actor data
+    const getResponse = await sessionDO.fetch(
+      new Request(
+        `http://session/actor/get?sessionId=${sessionId}&actorId=${actorId}`,
+        {
+          method: 'GET',
+        },
+      ),
+    );
+    const getResult = await getResponse.json();
+
+    if (!getResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: 'Actor not found',
+        },
+        404,
+      );
+    }
+
+    const actor = getResult.data;
+
+    if (actor.resources.bennies <= 0) {
+      return c.json(
+        {
+          success: false,
+          error: 'No Bennies available',
+        },
+        400,
+      );
+    }
+
+    // Spend Benny
+    const updateResponse = await sessionDO.fetch(
+      new Request('http://session/actor/update', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          actorId,
+          patch: {
+            resources: {
+              ...actor.resources,
+              bennies: actor.resources.bennies - 1,
+            },
+          },
+        }),
+      }),
+    );
+
+    const updateResult = await updateResponse.json();
+
+    if (!updateResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: updateResult.error,
+        },
+        500,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: {
+        benniesSpent: 1,
+        remainingBennies: actor.resources.bennies - 1,
+        purpose,
+        explanation: `Spent 1 Benny for ${purpose}`,
+      },
+      serverTs: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Actor spend benny error:', error);
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      500,
+    );
+  }
+}
+
+export async function actorMaintainConvictionHandler(c: any) {
+  try {
+    const body = await c.req.json();
+    const { sessionId, actorId, benniesSpent = 1 } = body;
+
+    if (!sessionId || !actorId) {
+      return c.json(
+        {
+          success: false,
+          error: 'sessionId and actorId required',
+        },
+        400,
+      );
+    }
+
+    // Get Session Durable Object
+    const sessionDO = c.env.SessionDO.get(c.env.SessionDO.idFromName('global'));
+
+    // Get current actor data
+    const getResponse = await sessionDO.fetch(
+      new Request(
+        `http://session/actor/get?sessionId=${sessionId}&actorId=${actorId}`,
+        {
+          method: 'GET',
+        },
+      ),
+    );
+    const getResult = await getResponse.json();
+
+    if (!getResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: 'Actor not found',
+        },
+        404,
+      );
+    }
+
+    const actor = getResult.data;
+
+    if (actor.resources.bennies < benniesSpent) {
+      return c.json(
+        {
+          success: false,
+          error: 'Not enough Bennies',
+        },
+        400,
+      );
+    }
+
+    if (actor.resources.conviction <= 0) {
+      return c.json(
+        {
+          success: false,
+          error: 'No Conviction to maintain',
+        },
+        400,
+      );
+    }
+
+    // Maintain Conviction by spending Bennies
+    const updateResponse = await sessionDO.fetch(
+      new Request('http://session/actor/update', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          sessionId,
+          actorId,
+          patch: {
+            resources: {
+              ...actor.resources,
+              bennies: actor.resources.bennies - benniesSpent,
+              conviction: actor.resources.conviction, // Keep current conviction
+            },
+          },
+        }),
+      }),
+    );
+
+    const updateResult = await updateResponse.json();
+
+    if (!updateResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: updateResult.error,
+        },
+        500,
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: {
+        convictionMaintained: true,
+        benniesSpent,
+        remainingBennies: actor.resources.bennies - benniesSpent,
+        currentConviction: actor.resources.conviction,
+        explanation: `Maintained Conviction by spending ${benniesSpent} Benny(ies)`,
+      },
+      serverTs: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('Actor maintain conviction error:', error);
+    return c.json(
+      {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      },
+      500,
+    );
+  }
+}
+
 export async function actorRollTraitHandler(c: any) {
   try {
     const body = await c.req.json();

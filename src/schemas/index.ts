@@ -4,7 +4,7 @@ import { z } from 'zod';
 export const PositionSchema = z.object({
   x: z.number(),
   y: z.number(),
-  facing: z.number(),
+  facing: z.number().optional(),
 });
 
 export const SkillSchema = z.object({
@@ -29,7 +29,8 @@ export const ActorStatusSchema = z.object({
   shaken: z.boolean(),
   stunned: z.boolean(),
   fatigue: z.number().min(0),
-  wounds: z.number().min(0),
+  wounds: z.number().min(0).max(4), // 4-Wound Cap from Savage Pathfinder
+  incapacitated: z.boolean().default(false),
 });
 
 export const DefenseSchema = z.object({
@@ -289,6 +290,30 @@ export const ApplyDamageRequestSchema = z.object({
   defenderId: z.string().uuid(),
   damageRoll: z.number(),
   ap: z.number().default(0),
+  damageType: z.string().optional(),
+});
+
+export const SoakRollRequestSchema = z.object({
+  sessionId: z.string().uuid(),
+  actorId: z.string().uuid(),
+  damageAmount: z.number(),
+  benniesSpent: z.number().min(1),
+});
+
+export const DamageResultSchema = z.object({
+  damageDealt: z.number(),
+  woundsApplied: z.number(),
+  shakenApplied: z.boolean(),
+  incapacitated: z.boolean(),
+  soakRoll: z
+    .object({
+      dice: z.array(z.number()),
+      total: z.number(),
+      success: z.boolean(),
+    })
+    .optional(),
+  benniesSpent: z.number().default(0),
+  explanation: z.string(),
 });
 
 export const CastPowerRequestSchema = z.object({
@@ -330,6 +355,19 @@ export const DiceRollResponseSchema = z.object({
   hash: z.string(),
 });
 
+export const JokerBonusSchema = z.object({
+  traitBonus: z.number(),
+  damageBonus: z.number(),
+  canActAnytime: z.boolean(),
+});
+
+export const InterruptContextSchema = z.object({
+  interrupter: z.string().uuid(),
+  target: z.string().uuid().optional(),
+  type: z.string(),
+  timestamp: z.string(),
+});
+
 export const CombatStateResponseSchema = z.object({
   sessionId: z.string().uuid(),
   status: z.enum([
@@ -347,6 +385,9 @@ export const CombatStateResponseSchema = z.object({
   hold: z.array(z.string().uuid()),
   participants: z.array(z.string().uuid()),
   dealt: z.record(z.string(), InitiativeCardSchema).optional(),
+  jokerBonuses: z.record(z.string(), JokerBonusSchema).optional(),
+  jokerDealt: z.boolean().optional(),
+  interruptContext: InterruptContextSchema.optional(),
 });
 
 export const AreaTemplateResponseSchema = z.object({
@@ -367,5 +408,8 @@ export type Session = z.infer<typeof SessionSchema>;
 export type Actor = z.infer<typeof ActorSchema>;
 export type DeckState = z.infer<typeof DeckStateSchema>;
 export type ActionLog = z.infer<typeof ActionLogSchema>;
+export type JokerBonus = z.infer<typeof JokerBonusSchema>;
+export type InterruptContext = z.infer<typeof InterruptContextSchema>;
+export type DamageResult = z.infer<typeof DamageResultSchema>;
 export type CombatState = z.infer<typeof CombatStateResponseSchema>;
 export type DiceRoll = z.infer<typeof DiceRollResponseSchema>;
