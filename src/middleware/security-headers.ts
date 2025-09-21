@@ -19,10 +19,10 @@ export function securityHeaders() {
       );
     }
 
-    // Content Security Policy
+    // Content Security Policy - simplified for API
     c.header(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';",
+      "default-src 'self'; connect-src 'self' https:;",
     );
 
     await next();
