@@ -62,7 +62,7 @@ const createMockEnv = () => ({
         return new Response(JSON.stringify({ success: true, data: {} }));
       }),
     }),
-    idFromName: vi.fn(),
+    idFromName: vi.fn().mockReturnValue('mock-deck-id'),
   },
 });
 
@@ -152,6 +152,8 @@ describe('CombatDO', () => {
     });
 
     it('should deal initiative cards and sort by value', async () => {
+      console.log('Starting deal test...');
+
       const request = new Request('http://combat/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -161,8 +163,12 @@ describe('CombatDO', () => {
         }),
       });
 
+      console.log('Making request to handleDeal...');
       const response = await combatDO.fetch(request);
+      console.log('Got response, parsing JSON...');
       const result = (await response.json()) as any;
+
+      console.log('Deal test result:', JSON.stringify(result, null, 2));
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('status', 'round_start');
@@ -280,6 +286,10 @@ describe('CombatDO', () => {
 
       const response = await combatDO.fetch(request);
       const result = (await response.json()) as any;
+
+      if (!result.success) {
+        console.log('Hold test error:', result);
+      }
 
       expect(result.success).toBe(true);
       expect(result.data).toHaveProperty('status', 'on_hold');

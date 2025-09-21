@@ -341,7 +341,7 @@ describe('Performance Tests', () => {
 
       const advancePromises = Array.from({ length: numAdvances }, () =>
         combatDO.fetch(
-          new Request('http/combat/advanceTurn', {
+          new Request('http://combat/advanceTurn', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({
