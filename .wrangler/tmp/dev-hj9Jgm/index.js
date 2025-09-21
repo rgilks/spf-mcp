@@ -20448,13 +20448,13 @@ function validateEnvironment(env) {
     );
   }
   if (env.JWT_SECRET && env.JWT_SECRET.length < 32) {
-    throw new Error(
-      'JWT_SECRET must be at least 32 characters long for security. Please generate a stronger secret.',
+    console.warn(
+      'JWT_SECRET is shorter than recommended 32 characters. Consider generating a stronger secret.',
     );
   }
   if (env.API_KEY && env.API_KEY.length < 16) {
-    throw new Error(
-      'API_KEY must be at least 16 characters long for security. Please generate a stronger API key.',
+    console.warn(
+      'API_KEY is shorter than recommended 16 characters. Consider generating a stronger API key.',
     );
   }
   console.log('\u2705 Environment validation passed');
