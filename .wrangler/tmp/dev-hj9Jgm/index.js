@@ -20355,6 +20355,30 @@ var combatRateLimit = rateLimit({
   // 30 combat actions per minute
 });
 
+// src/middleware/security-headers.ts
+function securityHeaders() {
+  return async (c, next) => {
+    c.header('X-Content-Type-Options', 'nosniff');
+    c.header('X-Frame-Options', 'DENY');
+    c.header('X-XSS-Protection', '1; mode=block');
+    c.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+    c.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    const protocol = c.req.header('x-forwarded-proto') || 'http';
+    if (protocol === 'https') {
+      c.header(
+        'Strict-Transport-Security',
+        'max-age=31536000; includeSubDomains; preload',
+      );
+    }
+    c.header(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https:; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';",
+    );
+    await next();
+  };
+}
+__name(securityHeaders, 'securityHeaders');
+
 // src/do/CombatDO.ts
 var CombatDO = class {
   static {
@@ -21971,6 +21995,7 @@ var SessionDO = class {
 
 // src/index.ts
 var app = new Hono2();
+app.use('*', securityHeaders);
 app.use('*', secureCors);
 app.get('/healthz', async (c) => {
   return c.json({

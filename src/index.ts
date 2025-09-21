@@ -59,8 +59,8 @@ const app = new Hono<{ Bindings: Env }>();
 //   await next();
 // });
 
-// Apply security middleware - temporarily simplified for debugging
-// app.use('*', securityHeaders as any);
+// Apply security middleware - gradually re-enabling
+app.use('*', securityHeaders as any);
 // app.use('*', securityLogging as any);
 app.use('*', secureCors);
 // app.use('*', sanitizeInput as any);
