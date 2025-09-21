@@ -306,7 +306,8 @@ describe('DeckDO', () => {
     it('should reject deal if deck not initialized', async () => {
       // Create new deck DO without initializing
       const newDeckDO = new DeckDO(mockState as any, mockEnv);
-      storedState = null;
+      // Clear mock storage to ensure no deck state
+      mockStorage.clear();
 
       const request = new Request('http://deck/deal', {
         method: 'POST',
@@ -441,7 +442,8 @@ describe('DeckDO', () => {
 
     it('should return error if no deck initialized', async () => {
       const newDeckDO = new DeckDO(mockState as any, mockEnv);
-      storedState = null;
+      // Clear mock storage to ensure no deck state
+      mockStorage.clear();
 
       const request = new Request('http://deck/state', {
         method: 'GET',
