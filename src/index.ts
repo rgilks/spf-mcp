@@ -15,6 +15,9 @@ import {
   combatRateLimit,
 } from './middleware/rate-limit';
 import { sanitizeInput } from './middleware/validation';
+import { securityHeaders } from './middleware/security-headers';
+import { validateEnvironment } from './middleware/env-validation';
+import { securityLogging } from './middleware/security-logging';
 import { CombatDO } from './do/CombatDO';
 import { DeckDO } from './do/DeckDO';
 import { RngDO } from './do/RngDO';
@@ -35,7 +38,26 @@ export type Env = {
 
 const app = new Hono<{ Bindings: Env }>();
 
+// Validate environment on startup
+app.use('*', async (c, next) => {
+  try {
+    validateEnvironment(c.env);
+  } catch (error) {
+    console.error('Environment validation failed:', error);
+    return c.json(
+      {
+        success: false,
+        error: 'Server configuration error',
+      },
+      500,
+    );
+  }
+  await next();
+});
+
 // Apply security middleware
+app.use('*', securityHeaders);
+app.use('*', securityLogging);
 app.use('*', secureCors);
 app.use('*', sanitizeInput as any);
 

@@ -33,10 +33,18 @@ export async function authMiddleware(
     const token = authHeader.substring(7);
 
     // Verify JWT token
-    const payload = await verify(
-      token,
-      c.env.JWT_SECRET || 'default-secret-change-in-production',
-    );
+    if (!c.env.JWT_SECRET) {
+      console.error('JWT_SECRET environment variable is not set');
+      return c.json(
+        {
+          success: false,
+          error: 'Server configuration error',
+        },
+        500,
+      );
+    }
+
+    const payload = await verify(token, c.env.JWT_SECRET);
 
     if (!payload || typeof payload !== 'object') {
       return c.json(

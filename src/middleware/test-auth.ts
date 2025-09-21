@@ -6,6 +6,20 @@ export async function testAuthMiddleware(
   c: Context<{ Bindings: Env }>,
   next: () => Promise<void>,
 ) {
+  // Only allow in test environment
+  if (c.env.NODE_ENV !== 'test' && process.env.NODE_ENV !== 'test') {
+    console.error(
+      'Test authentication middleware used in non-test environment',
+    );
+    return c.json(
+      {
+        success: false,
+        error: 'Authentication required',
+      },
+      401,
+    );
+  }
+
   // In test environment, create a mock user
   const mockUser = {
     id: 'test-user',

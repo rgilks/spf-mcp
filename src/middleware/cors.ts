@@ -3,27 +3,23 @@ import type { Env } from '../index';
 
 export const secureCors = cors({
   origin: (origin) => {
-    // Allow specific origins in production
+    // Allow specific origins
     const allowedOrigins = [
       'https://cursor.sh',
-      'https://cursor.com',
-      'https://app.cursor.com',
+      'https://www.cursor.sh',
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173',
     ];
 
-    // In development, allow localhost
-    if (process.env.NODE_ENV === 'development') {
-      return origin?.startsWith('http://localhost')
-        ? origin
-        : 'https://cursor.sh';
-    }
+    // Allow requests with no origin (e.g., mobile apps, Postman)
+    if (!origin) return true;
 
-    // In production, only allow specific origins
-    return allowedOrigins.includes(origin || '') ? origin : 'https://cursor.sh';
+    return allowedOrigins.includes(origin);
   },
   allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowHeaders: ['Content-Type', 'Authorization', 'X-Session-ID', 'X-API-Key'],
-  credentials: true,
+  credentials: false,
   maxAge: 86400, // 24 hours
 });

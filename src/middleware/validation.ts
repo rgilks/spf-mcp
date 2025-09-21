@@ -48,6 +48,13 @@ export function sanitizeInput() {
         return;
       }
 
+      // Check if request has a JSON body
+      const contentType = c.req.header('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        await next();
+        return;
+      }
+
       const body = await c.req.json();
 
       // Recursively sanitize strings

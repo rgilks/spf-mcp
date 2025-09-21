@@ -35,10 +35,26 @@ The Savage Pathfinder MCP Server now requires authentication for all game operat
 
 ### **5. CORS Protection**
 
-- **Allowed Origins**: Cursor, localhost (dev only)
+- **Allowed Origins**: Cursor, localhost (dev only), specific domains
 - **Methods**: GET, POST, PUT, DELETE, OPTIONS
-- **Headers**: Authorization, Content-Type, X-Session-ID
+- **Headers**: Authorization, Content-Type, X-Session-ID, X-API-Key
 - **Credentials**: Secure cookie handling
+
+### **6. Security Headers**
+
+- **X-Content-Type-Options**: nosniff
+- **X-Frame-Options**: DENY
+- **X-XSS-Protection**: 1; mode=block
+- **Strict-Transport-Security**: HSTS for HTTPS
+- **Content-Security-Policy**: Restrictive CSP
+- **Referrer-Policy**: strict-origin-when-cross-origin
+
+### **7. Security Logging**
+
+- **Authentication Failures**: Logged with IP and user agent
+- **Rate Limit Violations**: Tracked for abuse detection
+- **Suspicious Activity**: Long requests and unusual patterns
+- **Audit Trail**: 30-day retention in KV storage
 
 ## 🔑 **Getting Access**
 
