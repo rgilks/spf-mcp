@@ -55,6 +55,13 @@ export function sanitizeInput() {
         return;
       }
 
+      // Check if there's actually a body to parse
+      const contentLength = c.req.header('content-length');
+      if (!contentLength || contentLength === '0') {
+        await next();
+        return;
+      }
+
       const body = await c.req.json();
 
       // Recursively sanitize strings

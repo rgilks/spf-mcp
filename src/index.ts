@@ -43,6 +43,12 @@ let envValidated = false;
 app.use('*', async (c, next) => {
   if (!envValidated) {
     try {
+      console.log('Environment validation - checking variables:', {
+        JWT_SECRET: c.env.JWT_SECRET ? '***' : 'missing',
+        API_KEY: c.env.API_KEY ? '***' : 'missing',
+        MCP_SERVER_NAME: c.env.MCP_SERVER_NAME,
+        availableKeys: Object.keys(c.env),
+      });
       validateEnvironment(c.env);
       envValidated = true;
     } catch (error) {
@@ -57,10 +63,10 @@ app.use('*', async (c, next) => {
 });
 
 // Apply security middleware
-app.use('*', securityHeaders as any);
-app.use('*', securityLogging as any);
+// app.use('*', securityHeaders as any); // Temporarily disabled
+// app.use('*', securityLogging as any); // Temporarily disabled
 app.use('*', secureCors);
-app.use('*', sanitizeInput as any);
+// app.use('*', sanitizeInput as any); // Temporarily disabled
 
 // Public endpoints (no auth required)
 app.get('/healthz', async (c) => {
