@@ -1,0 +1,49 @@
+---
+description:
+globs:
+alwaysApply: true
+---
+
+# Savage Pathfinder MCP Server - Cursor Rules
+
+## Testing Rules
+
+- NEVER run tests in watch mode (e.g., `npm test -- --watch`, `vitest --watch`, `vitest -w`)
+- Always run tests in single-run mode (e.g., `npm test`, `vitest run`)
+- Watch mode requires manual intervention to stop and can block the terminal
+
+## Code Style
+
+- Use Prettier for consistent formatting
+- Follow TypeScript best practices
+- Use meaningful variable and function names
+- Add JSDoc comments for complex functions
+
+## Architecture Guidelines
+
+- Keep Durable Objects focused on single responsibilities
+- Use Zod schemas for all input/output validation
+- Maintain separation between MCP tools and business logic
+- Follow the established patterns for error handling
+
+## File Organization
+
+- Keep related functionality grouped together
+- Use descriptive file and directory names
+- Maintain clear separation between tests and source code
+- Follow the established project structure
+
+## Git Practices
+
+- Write clear, descriptive commit messages
+- Keep commits focused on single changes
+- Use conventional commit format when possible
+- Test before committing
+
+## Documentation
+
+- Keep README.md up to date
+- Document any new MCP tools or endpoints
+- Include examples for complex functionality
+- Maintain the spec.md as the source of truth
+
