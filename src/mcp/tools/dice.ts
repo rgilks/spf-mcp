@@ -1,6 +1,8 @@
 import { DiceRollRequestSchema } from '../../schemas';
 import type { Env } from '../../index';
 import { ZodError } from 'zod';
+import { SpfMcpError, createMcpResponse } from '../errors';
+import { McpErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 export async function diceRollHandler(c: any) {
   try {
@@ -10,12 +12,9 @@ export async function diceRollHandler(c: any) {
     // Get sessionId from headers or body
     const sessionId = c.req.header('sessionId') || body.sessionId;
     if (!sessionId) {
-      return c.json(
-        {
-          success: false,
-          error: 'sessionId required in header or body',
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'sessionId required in header or body',
       );
     }
 
@@ -34,12 +33,9 @@ export async function diceRollHandler(c: any) {
     const result = await response.json();
 
     if (!result.success) {
-      return c.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        response.status,
+      throw new SpfMcpError(
+        McpErrorCode.InternalError,
+        result.error || 'Dice roll failed',
       );
     }
 
@@ -51,20 +47,18 @@ export async function diceRollHandler(c: any) {
   } catch (error) {
     console.error('Dice roll error:', error);
     if (error instanceof ZodError) {
-      return c.json(
-        {
-          success: false,
-          error: JSON.stringify(error.issues),
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid dice roll parameters',
+        { issues: error.issues },
       );
     }
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    if (error instanceof SpfMcpError) {
+      throw error;
+    }
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }
@@ -75,24 +69,18 @@ export async function diceRollWithConvictionHandler(c: any) {
     const { formula, explode, wildDie, seed, actorId, conviction } = body;
 
     if (!actorId) {
-      return c.json(
-        {
-          success: false,
-          error: 'actorId required for conviction rolls',
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'actorId required for conviction rolls',
       );
     }
 
     // Get sessionId from headers or body
     const sessionId = c.req.header('sessionId') || body.sessionId;
     if (!sessionId) {
-      return c.json(
-        {
-          success: false,
-          error: 'sessionId required in header or body',
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'sessionId required in header or body',
       );
     }
 
@@ -117,12 +105,9 @@ export async function diceRollWithConvictionHandler(c: any) {
     const result = await response.json();
 
     if (!result.success) {
-      return c.json(
-        {
-          success: false,
-          error: result.error,
-        },
-        response.status,
+      throw new SpfMcpError(
+        McpErrorCode.InternalError,
+        result.error || 'Dice roll with conviction failed',
       );
     }
 
@@ -133,12 +118,12 @@ export async function diceRollWithConvictionHandler(c: any) {
     });
   } catch (error) {
     console.error('Dice roll with conviction error:', error);
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    if (error instanceof SpfMcpError) {
+      throw error;
+    }
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }

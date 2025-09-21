@@ -88,6 +88,7 @@ A production-ready Model Context Protocol (MCP) server for playing _Pathfinder f
 - Cloudflare account with Workers, D1, KV, R2, Durable Objects enabled
 - OpenAI account with GPT-5 Voice Mode access
 - Git (for cloning the repository)
+- MCP client (Claude Desktop, Cursor, or custom MCP client)
 
 ### Installation
 
@@ -112,6 +113,10 @@ npm run db:migrate
 
 # Deploy to Cloudflare
 npm run deploy
+
+# Set up MCP secrets (required for MCP server)
+wrangler secret put JWT_SECRET
+wrangler secret put API_KEY
 ```
 
 ### Configuration
@@ -141,6 +146,29 @@ NODE_ENV = "production"
 ```
 
 ## 🎮 Usage
+
+### MCP Client Setup
+
+#### For Cursor IDE
+
+1. Copy `cursor-mcp-server.json` to your Cursor MCP configuration
+2. Update the environment variables with your actual secrets
+3. Restart Cursor to load the MCP server
+
+#### For Claude Desktop
+
+1. Add the server configuration to your Claude Desktop MCP settings
+2. Use the `mcp-client-config.json` as a reference
+
+#### Running the MCP Server Directly
+
+```bash
+# Run MCP server in development mode
+npm run mcp:dev
+
+# Run MCP server in production mode
+npm run mcp
+```
 
 ### Creating a Game Session
 

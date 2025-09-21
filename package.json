@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "mcp": "node mcp-server.js",
+    "mcp": "tsx src/mcp-server.ts",
+    "mcp:dev": "tsx --watch src/mcp-server.ts",
     "check": "tsc -p tsconfig.json --noEmit",
     "format": "prettier -w .",
     "format:check": "prettier --check .",

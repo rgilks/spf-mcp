@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "spf-mcp": {
+      "command": "npm",
+      "args": ["run", "mcp"],
+      "env": {
+        "NODE_ENV": "production"
+      }
+    }
+  }
+}

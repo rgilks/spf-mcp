@@ -5,6 +5,8 @@ import {
 import type { Env } from '../../index';
 import { ZodError } from 'zod';
 import type { Context } from 'hono';
+import { SpfMcpError, createMcpResponse } from '../errors';
+import { McpErrorCode } from '@modelcontextprotocol/sdk/types.js';
 
 export async function sessionCreateHandler(c: Context<{ Bindings: Env }>) {
   try {
@@ -47,20 +49,15 @@ export async function sessionCreateHandler(c: Context<{ Bindings: Env }>) {
   } catch (error) {
     console.error('Session create error:', error);
     if (error instanceof ZodError) {
-      return c.json(
-        {
-          success: false,
-          error: JSON.stringify(error.issues),
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid session creation parameters',
+        { issues: error.issues },
       );
     }
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }
@@ -69,12 +66,9 @@ export async function sessionLoadHandler(c: Context<{ Bindings: Env }>) {
   try {
     const sessionId = c.req.param('sessionId');
     if (!sessionId) {
-      return c.json(
-        {
-          success: false,
-          error: 'sessionId parameter required',
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'sessionId parameter required',
       );
     }
 
@@ -112,20 +106,15 @@ export async function sessionLoadHandler(c: Context<{ Bindings: Env }>) {
   } catch (error) {
     console.error('Session load error:', error);
     if (error instanceof ZodError) {
-      return c.json(
-        {
-          success: false,
-          error: JSON.stringify(error.issues),
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid session load parameters',
+        { issues: error.issues },
       );
     }
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }
@@ -171,20 +160,15 @@ export async function sessionUpdateHandler(c: Context<{ Bindings: Env }>) {
   } catch (error) {
     console.error('Session update error:', error);
     if (error instanceof ZodError) {
-      return c.json(
-        {
-          success: false,
-          error: JSON.stringify(error.issues),
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid session update parameters',
+        { issues: error.issues },
       );
     }
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }
@@ -195,25 +179,17 @@ export async function sessionEndHandler(c: Context<{ Bindings: Env }>) {
     const { sessionId, reason } = body;
 
     if (!sessionId) {
-      return c.json(
-        {
-          success: false,
-          error: 'sessionId required',
-        },
-        400,
-      );
+      throw new SpfMcpError(McpErrorCode.InvalidParams, 'sessionId required');
     }
 
     // Validate sessionId format
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(sessionId)) {
-      return c.json(
-        {
-          success: false,
-          error: 'Invalid sessionId format',
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid sessionId format',
+        { sessionId },
       );
     }
 
@@ -253,20 +229,15 @@ export async function sessionEndHandler(c: Context<{ Bindings: Env }>) {
   } catch (error) {
     console.error('Session end error:', error);
     if (error instanceof ZodError) {
-      return c.json(
-        {
-          success: false,
-          error: JSON.stringify(error.issues),
-        },
-        400,
+      throw new SpfMcpError(
+        McpErrorCode.InvalidParams,
+        'Invalid session end parameters',
+        { issues: error.issues },
       );
     }
-    return c.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      },
-      500,
+    throw new SpfMcpError(
+      McpErrorCode.InternalError,
+      error instanceof Error ? error.message : 'Unknown error',
     );
   }
 }
