@@ -5,6 +5,7 @@ import {
   CombatInterruptRequestSchema,
 } from '../../schemas';
 import type { Env } from '../../index';
+import { ZodError } from 'zod';
 
 export async function combatStartHandler(c: any) {
   try {
@@ -43,6 +44,15 @@ export async function combatStartHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat start error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -90,6 +100,15 @@ export async function combatDealHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat deal error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -137,6 +156,15 @@ export async function combatHoldHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat hold error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -184,6 +212,15 @@ export async function combatInterruptHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat interrupt error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -204,6 +241,19 @@ export async function combatAdvanceTurnHandler(c: any) {
         {
           success: false,
           error: 'sessionId required',
+        },
+        400,
+      );
+    }
+
+    // Validate sessionId format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid sessionId format',
         },
         400,
       );
@@ -241,6 +291,15 @@ export async function combatAdvanceTurnHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat advance turn error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -261,6 +320,19 @@ export async function combatEndRoundHandler(c: any) {
         {
           success: false,
           error: 'sessionId required',
+        },
+        400,
+      );
+    }
+
+    // Validate sessionId format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid sessionId format',
         },
         400,
       );
@@ -298,6 +370,15 @@ export async function combatEndRoundHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat end round error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -351,6 +432,15 @@ export async function combatStateHandler(c: any) {
     });
   } catch (error) {
     console.error('Combat state error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,

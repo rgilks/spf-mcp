@@ -72,6 +72,11 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.route('/mcp/tool', mcpToolsRouter);
 
+// Catch-all route for 404s
+app.all('*', (c) => {
+  return c.json({ error: 'Not Found' }, 404);
+});
+
 export default {
   fetch: app.fetch,
 };

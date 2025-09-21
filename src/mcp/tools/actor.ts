@@ -6,6 +6,7 @@ import {
   RollTraitRequestSchema,
 } from '../../schemas';
 import type { Env } from '../../index';
+import { ZodError } from 'zod';
 
 export async function actorUpsertHandler(c: any) {
   try {
@@ -42,6 +43,15 @@ export async function actorUpsertHandler(c: any) {
     });
   } catch (error) {
     console.error('Actor upsert error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -87,6 +97,15 @@ export async function actorPatchHandler(c: any) {
     });
   } catch (error) {
     console.error('Actor patch error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -132,6 +151,15 @@ export async function actorMoveHandler(c: any) {
     });
   } catch (error) {
     console.error('Actor move error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -177,6 +205,15 @@ export async function actorApplyEffectHandler(c: any) {
     });
   } catch (error) {
     console.error('Actor apply effect error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -222,6 +259,15 @@ export async function actorRollTraitHandler(c: any) {
     });
   } catch (error) {
     console.error('Actor roll trait error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -273,6 +319,15 @@ export async function actorsListHandler(c: any) {
     });
   } catch (error) {
     console.error('Actors list error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,

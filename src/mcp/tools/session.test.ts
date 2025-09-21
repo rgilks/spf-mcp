@@ -41,6 +41,7 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionCreateHandler(mockCtx as any);
 
@@ -75,7 +76,7 @@ describe('Session MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -95,6 +96,7 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionLoadHandler(mockCtx as any);
 
@@ -126,13 +128,14 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionLoadHandler(mockCtx as any);
 
       expect(mockCtx.json).toHaveBeenCalledWith(
         {
           success: false,
-          error: { error: 'Session not found' },
+          error: 'Session not found',
         },
         404,
       );
@@ -179,6 +182,7 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionUpdateHandler(mockCtx as any);
 
@@ -214,6 +218,7 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionUpdateHandler(mockCtx as any);
 
@@ -234,7 +239,7 @@ describe('Session MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -255,6 +260,7 @@ describe('Session MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await sessionEndHandler(mockCtx as any);
 
@@ -282,7 +288,7 @@ describe('Session MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });

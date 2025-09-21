@@ -42,6 +42,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatStartHandler(mockCtx as any);
 
@@ -72,7 +73,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
 
@@ -95,13 +96,14 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatStartHandler(mockCtx as any);
 
       expect(mockCtx.json).toHaveBeenCalledWith(
         {
           success: false,
-          error: { error: 'Combat start failed' },
+          error: 'Combat start failed',
         },
         500,
       );
@@ -130,6 +132,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatDealHandler(mockCtx as any);
 
@@ -172,6 +175,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatDealHandler(mockCtx as any);
 
@@ -192,7 +196,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -215,6 +219,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatHoldHandler(mockCtx as any);
 
@@ -222,7 +227,6 @@ describe('Combat MCP Tools', () => {
       expect(mockCtx.json).toHaveBeenCalledWith({
         success: true,
         data: {
-          activeActorId: undefined,
           hold: [testActorId1],
           status: 'on_hold',
         },
@@ -244,7 +248,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -268,6 +272,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatInterruptHandler(mockCtx as any);
 
@@ -298,7 +303,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -321,6 +326,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatAdvanceTurnHandler(mockCtx as any);
 
@@ -350,7 +356,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -373,6 +379,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatEndRoundHandler(mockCtx as any);
 
@@ -402,7 +409,7 @@ describe('Combat MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -424,6 +431,7 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatStateHandler(mockCtx as any);
 
@@ -457,13 +465,14 @@ describe('Combat MCP Tools', () => {
         ),
       };
       mockCtx.env.CombatDO.get.mockReturnValue(mockCombatDO);
+      mockCtx.env.CombatDO.idFromName.mockReturnValue('mock-combat-id');
 
       await combatStateHandler(mockCtx as any);
 
       expect(mockCtx.json).toHaveBeenCalledWith(
         {
           success: false,
-          error: { error: 'Combat not started' },
+          error: 'Combat not started',
         },
         404,
       );

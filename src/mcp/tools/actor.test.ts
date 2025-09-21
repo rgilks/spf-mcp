@@ -68,6 +68,7 @@ describe('Actor MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await actorUpsertHandler(mockCtx as any);
 
@@ -110,7 +111,7 @@ describe('Actor MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -137,6 +138,7 @@ describe('Actor MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await actorRollTraitHandler(mockCtx as any);
 
@@ -168,7 +170,7 @@ describe('Actor MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -199,6 +201,7 @@ describe('Actor MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await actorApplyEffectHandler(mockCtx as any);
 
@@ -236,7 +239,7 @@ describe('Actor MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -260,6 +263,7 @@ describe('Actor MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await actorMoveHandler(mockCtx as any);
 
@@ -289,7 +293,7 @@ describe('Actor MCP Tools', () => {
           success: false,
           error: expect.any(String),
         }),
-        500,
+        400,
       );
     });
   });
@@ -313,6 +317,7 @@ describe('Actor MCP Tools', () => {
         ),
       };
       mockCtx.env.SessionDO.get.mockReturnValue(mockSessionDO);
+      mockCtx.env.SessionDO.idFromName.mockReturnValue('mock-session-id');
 
       await actorsListHandler(mockCtx as any);
 

@@ -1,5 +1,6 @@
 import { DiceRollRequestSchema } from '../../schemas';
 import type { Env } from '../../index';
+import { ZodError } from 'zod';
 
 export async function diceRollHandler(c: any) {
   try {
@@ -49,6 +50,15 @@ export async function diceRollHandler(c: any) {
     });
   } catch (error) {
     console.error('Dice roll error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,

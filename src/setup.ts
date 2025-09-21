@@ -11,6 +11,9 @@ Object.defineProperty(global, 'crypto', {
     }),
     subtle: {
       digest: vi.fn().mockResolvedValue(new ArrayBuffer(32)),
+      importKey: vi.fn().mockResolvedValue({}),
+      sign: vi.fn().mockResolvedValue(new ArrayBuffer(64)),
+      verify: vi.fn().mockResolvedValue(true),
     },
   },
 });

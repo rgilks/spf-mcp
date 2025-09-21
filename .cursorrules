@@ -1,0 +1,55 @@
+# Savage Pathfinder MCP Server - Cursor Rules
+
+## Testing Rules
+
+- NEVER run tests in watch mode (e.g., `npm test -- --watch`, `vitest --watch`, `vitest -w`)
+- Always run tests in single-run mode (e.g., `npm test`, `vitest run`)
+- Watch mode requires manual intervention to stop and can block the terminal
+- Use `npm test` for running tests (single-run mode)
+- Use `npm run test:coverage` for coverage reports
+- NEVER use `__tests__` folders - put tests alongside the files they test
+- Place test files next to the source files they test (e.g., `src/do/CombatDO.test.ts`)
+
+## Code Style
+
+- Use Prettier for consistent formatting
+- Follow TypeScript best practices
+- Use meaningful variable and function names
+- AVOID using TypeScript classes where possible - prefer functions and objects
+- Use functional programming patterns and composition over inheritance
+- Prefer interfaces and types over classes for data structures
+- DO NOT add JSDoc comments - keep code self-documenting through clear naming
+
+## Architecture Guidelines
+
+- Keep Durable Objects focused on single responsibilities
+- Use Zod schemas for all input/output validation
+- Maintain separation between MCP tools and business logic
+- Follow the established patterns for error handling
+- Minimize class usage - use functions and objects instead
+- Prefer composition over inheritance
+
+## File Organization
+
+- Keep related functionality grouped together
+- Use descriptive file and directory names
+- Place test files alongside the source files they test
+- Follow the established project structure
+- Avoid `__tests__` directories - use `.test.ts` files next to source
+
+## Git Practices
+
+- Write clear, descriptive commit messages
+- Keep commits focused on single changes
+- Use conventional commit format when possible
+- Test before committing
+- Pre-commit hooks will automatically run linting and formatting
+- Pre-push hooks will run TypeScript checks, tests, and format validation
+- NEVER run tests in watch mode in any Git hooks or CI/CD
+
+## Documentation
+
+- Keep README.md up to date
+- Document any new MCP tools or endpoints
+- Include examples for complex functionality
+- Maintain the spec.md as the source of truth

@@ -3,6 +3,7 @@ import {
   UpdateSessionRequestSchema,
 } from '../../schemas';
 import type { Env } from '../../index';
+import { ZodError } from 'zod';
 
 export async function sessionCreateHandler(c: any) {
   try {
@@ -39,6 +40,15 @@ export async function sessionCreateHandler(c: any) {
     });
   } catch (error) {
     console.error('Session create error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -90,6 +100,15 @@ export async function sessionLoadHandler(c: any) {
     });
   } catch (error) {
     console.error('Session load error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -135,6 +154,15 @@ export async function sessionUpdateHandler(c: any) {
     });
   } catch (error) {
     console.error('Session update error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
@@ -155,6 +183,19 @@ export async function sessionEndHandler(c: any) {
         {
           success: false,
           error: 'sessionId required',
+        },
+        400,
+      );
+    }
+
+    // Validate sessionId format
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(sessionId)) {
+      return c.json(
+        {
+          success: false,
+          error: 'Invalid sessionId format',
         },
         400,
       );
@@ -190,6 +231,15 @@ export async function sessionEndHandler(c: any) {
     });
   } catch (error) {
     console.error('Session end error:', error);
+    if (error instanceof ZodError) {
+      return c.json(
+        {
+          success: false,
+          error: JSON.stringify(error.issues),
+        },
+        400,
+      );
+    }
     return c.json(
       {
         success: false,
