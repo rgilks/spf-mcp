@@ -166,8 +166,21 @@ export class RngDO {
   }
 
   private createPRNG(seed: string): () => number {
-    // Convert hex seed to number
-    let state = parseInt(seed.slice(0, 8), 16) || 0x9e3779b9;
+    // A simple but effective string hashing function (cyrb53)
+    let h1 = 0xdeadbeef,
+      h2 = 0x41c6ce57;
+    for (let i = 0, ch; i < seed.length; i++) {
+      ch = seed.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 =
+      Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^
+      Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 =
+      Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^
+      Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    let state = 4294967296 * (2097151 & h2) + (h1 >>> 0);
 
     return () => {
       // Xorshift32 algorithm for deterministic PRNG
@@ -181,13 +194,21 @@ export class RngDO {
   private parseDiceFormula(
     formula: string,
   ): { count: number; sides: number; modifier: number } | null {
-    // Support formats like "2d6+1", "1d8!!", "3d4-2"
-    const match = formula.match(/^(\d+)d(\d+)(!!)?([+-]\d+)?$/i);
-    if (!match) return null;
+    if (!formula) return null;
 
-    const count = parseInt(match[1], 10);
-    const sides = parseInt(match[2], 10);
-    const modifier = match[4] ? parseInt(match[4], 10) : 0;
+    const match = formula.match(
+      /^(?<count>\d+)?d(?<sides>\d+)(?<modifier>[+-]\d+)?$/,
+    );
+
+    if (!match || !match.groups) {
+      return null;
+    }
+
+    const count = match.groups.count ? parseInt(match.groups.count, 10) : 1;
+    const sides = parseInt(match.groups.sides, 10);
+    const modifier = match.groups.modifier
+      ? parseInt(match.groups.modifier, 10)
+      : 0;
 
     return { count, sides, modifier };
   }

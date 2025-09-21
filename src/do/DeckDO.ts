@@ -53,7 +53,7 @@ export class DeckDO {
       discard: [],
       dealt: {},
       lastJokerRound: -1,
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(),
     };
 
     await this.state.storage.put('deckState', deckState);
@@ -116,7 +116,7 @@ export class DeckDO {
       }
     }
 
-    deckState.updatedAt = new Date().toISOString();
+    deckState.updatedAt = new Date();
     await this.state.storage.put('deckState', deckState);
 
     return new Response(
@@ -160,7 +160,7 @@ export class DeckDO {
     // Return card to deck
     deckState.cards.push(card);
     delete deckState.dealt[actorId];
-    deckState.updatedAt = new Date().toISOString();
+    deckState.updatedAt = new Date();
 
     await this.state.storage.put('deckState', deckState);
 
@@ -314,7 +314,12 @@ export class DeckDO {
     if (!stored) return null;
 
     try {
-      return DeckStateSchema.parse(stored);
+      const parsed = DeckStateSchema.parse(stored);
+      // Ensure dates are properly hydrated
+      if (typeof parsed.updatedAt === 'string') {
+        parsed.updatedAt = new Date(parsed.updatedAt);
+      }
+      return parsed;
     } catch (error) {
       console.error('Failed to parse deck state:', error);
       return null;

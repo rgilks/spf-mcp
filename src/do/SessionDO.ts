@@ -229,6 +229,16 @@ export class SessionDO {
       values.push(input.patch.illumination);
     }
 
+    if (updates.length === 0) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'No fields to update',
+        }),
+        { status: 400, headers: { 'content-type': 'application/json' } },
+      );
+    }
+
     updates.push('updatedAt = ?');
     values.push(now);
     values.push(input.sessionId);

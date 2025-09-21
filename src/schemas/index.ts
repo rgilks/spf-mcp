@@ -109,12 +109,12 @@ export const ActorSchema = z.object({
 
 export const DeckStateSchema = z.object({
   id: z.string().uuid(),
-  sessionId: z.string().uuid(),
+  sessionId: z.string(),
   cards: z.array(InitiativeCardSchema),
   discard: z.array(InitiativeCardSchema),
   dealt: z.record(z.string(), InitiativeCardSchema),
   lastJokerRound: z.number().min(-1),
-  updatedAt: z.string(),
+  updatedAt: z.union([z.string().datetime(), z.date()]),
 });
 
 export const ActionLogSchema = z.object({

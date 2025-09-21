@@ -55,9 +55,9 @@ const mockEnv = {
           JSON.stringify({
             success: true,
             data: {
-              formula: '2d6',
+              formula: '2d6+1',
               results: [[3, 4]],
-              total: 7,
+              total: 8,
               seed: 'test',
               hash: 'hash',
             },
@@ -72,30 +72,47 @@ const mockEnv = {
       fetch: vi.fn().mockImplementation(async (req) => {
         const url = new URL(req.url);
         const path = url.pathname;
+        const body =
+          req.method === 'POST' ? await req.json().catch(() => ({})) : {};
 
-        if (path.includes('/get')) {
+        if (path.endsWith('/create')) {
+          return new Response(
+            JSON.stringify({
+              success: true,
+              data: { sessionId: body.sessionId || 'test-session' },
+            }),
+          );
+        }
+
+        if (path.includes('/test-session/get')) {
           return new Response(
             JSON.stringify({
               success: true,
               data: { id: 'test-session', name: 'Test Session' },
-              serverTs: new Date().toISOString(),
             }),
-            {
-              headers: { 'content-type': 'application/json' },
-            },
           );
         }
 
-        return new Response(
-          JSON.stringify({
-            success: true,
-            data: { sessionId: 'test-session' },
-            serverTs: new Date().toISOString(),
-          }),
-          {
-            headers: { 'content-type': 'application/json' },
-          },
-        );
+        if (path.endsWith('/actor/create')) {
+          const body = await req.json().catch(() => ({}));
+          return new Response(
+            JSON.stringify({
+              success: true,
+              data: {
+                id: 'new-actor',
+                name: body.actor?.name || 'Test Character',
+                sessionId: body.sessionId,
+                ...body.actor,
+              },
+              serverTs: new Date().toISOString(),
+            }),
+            { headers: { 'Content-Type': 'application/json' } },
+          );
+        }
+
+        return new Response(JSON.stringify({ success: true, data: {} }), {
+          headers: { 'Content-Type': 'application/json' },
+        });
       }),
     }),
     idFromName: vi.fn(),
@@ -144,8 +161,8 @@ describe('Integration Tests', () => {
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
-      expect(result.data).toHaveProperty('formula', '2d6');
-      expect(result.data).toHaveProperty('total', 7);
+      expect(result.data).toHaveProperty('formula', '2d6+1');
+      expect(result.data).toHaveProperty('total', 8);
     });
 
     it('should reject dice roll without sessionId', async () => {
@@ -190,8 +207,19 @@ describe('Integration Tests', () => {
     });
 
     it('should load an existing session', async () => {
-      const request = new Request('http://localhost/mcp/session/test-session');
+      const request = new Request(
+        'http://localhost/mcp/session/test-session/get',
+      );
       const response = await app.fetch(request, mockEnv);
+
+      // Check if response is JSON
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Non-JSON response:', text);
+        throw new Error('Expected JSON response');
+      }
+
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(true);
@@ -201,6 +229,31 @@ describe('Integration Tests', () => {
 
   describe('Actor Management', () => {
     it('should create an actor', async () => {
+      // Update the SessionDO mock to handle actor creation properly
+      mockEnv.SessionDO.get().fetch = vi
+        .fn()
+        .mockImplementation(async (req) => {
+          const url = new URL(req.url);
+          const path = url.pathname;
+
+          if (path.endsWith('/actor/create')) {
+            const body = await req.json();
+            return new Response(
+              JSON.stringify({
+                success: true,
+                data: {
+                  id: 'new-actor',
+                  sessionId: body.sessionId,
+                  ...body.actor,
+                },
+                serverTs: new Date().toISOString(),
+              }),
+              { headers: { 'Content-Type': 'application/json' } },
+            );
+          }
+          return new Response(JSON.stringify({ success: true, data: {} }));
+        });
+
       const request = new Request('http://localhost/mcp/tool/actor.upsert', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -230,6 +283,25 @@ describe('Integration Tests', () => {
 
   describe('Combat Management', () => {
     it('should start combat', async () => {
+      // Update the CombatDO mock to handle start properly
+      mockEnv.CombatDO.get().fetch = vi.fn().mockImplementation(async (req) => {
+        const body = await req.json();
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              sessionId: body.sessionId,
+              status: 'idle',
+              round: 0,
+              turn: 0,
+              participants: body.participants || [],
+            },
+            serverTs: new Date().toISOString(),
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+      });
+
       const request = new Request('http://localhost/mcp/tool/combat.start', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -248,6 +320,23 @@ describe('Integration Tests', () => {
     });
 
     it('should deal initiative cards', async () => {
+      // Update the CombatDO mock to handle deal properly
+      mockEnv.CombatDO.get().fetch = vi.fn().mockImplementation(async (req) => {
+        return new Response(
+          JSON.stringify({
+            success: true,
+            data: {
+              dealt: {
+                actor1: { rank: 'K', suit: 'Spades', id: 'card1' },
+                actor2: { rank: 'Q', suit: 'Hearts', id: 'card2' },
+              },
+            },
+            serverTs: new Date().toISOString(),
+          }),
+          { headers: { 'Content-Type': 'application/json' } },
+        );
+      });
+
       const request = new Request('http://localhost/mcp/tool/combat.deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

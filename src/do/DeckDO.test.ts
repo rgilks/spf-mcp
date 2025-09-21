@@ -1,49 +1,33 @@
-import { describe, it, expect, beforeEach, vi, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { DeckDO } from './DeckDO';
-
-// Mock storage that actually stores data
-const mockStorage = new Map<string, any>();
-
-// Mock DurableObjectState
-const mockState = {
-  storage: {
-    put: vi.fn().mockImplementation(async (key, value) => {
-      console.log('Mock storage put called with key:', key, 'value:', value);
-      mockStorage.set(key, value);
-    }),
-    get: vi.fn().mockImplementation(async (key) => {
-      console.log(
-        'Mock storage get called with key:',
-        key,
-        'returning:',
-        mockStorage.get(key),
-      );
-      return mockStorage.get(key) || null;
-    }),
-    delete: vi.fn().mockImplementation(async (key) => {
-      mockStorage.delete(key);
-    }),
-    list: vi.fn().mockResolvedValue([]),
-  },
-};
 
 // Mock environment
 const mockEnv = {};
 
+const createDeckDO = () => {
+  const mockStorage = new Map<string, any>();
+  const mockState = {
+    storage: {
+      put: vi.fn().mockImplementation(async (key, value) => {
+        mockStorage.set(key, JSON.stringify(value));
+      }),
+      get: vi.fn().mockImplementation(async (key) => {
+        const value = mockStorage.get(key);
+        return value ? JSON.parse(value) : null;
+      }),
+      delete: vi.fn().mockImplementation(async (key) => {
+        mockStorage.delete(key);
+      }),
+      list: vi.fn().mockResolvedValue([]),
+    },
+  };
+  return { deckDO: new DeckDO(mockState as any, mockEnv), mockStorage };
+};
+
 describe('DeckDO', () => {
-  let deckDO: DeckDO;
-
-  beforeAll(() => {
-    deckDO = new DeckDO(mockState as any, mockEnv);
-  });
-
-  beforeEach(() => {
-    // Clear mock storage before each test
-    mockStorage.clear();
-  });
-
   describe('handleReset', () => {
     it('should create a standard deck with jokers', async () => {
+      const { deckDO } = createDeckDO();
       const request = new Request('http://deck/reset', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -99,6 +83,7 @@ describe('DeckDO', () => {
     });
 
     it('should create a deck without jokers', async () => {
+      const { deckDO } = createDeckDO();
       const request = new Request('http://deck/reset', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -122,6 +107,7 @@ describe('DeckDO', () => {
 
     it('should shuffle deck on reset', async () => {
       // Reset deck twice and compare order
+      const { deckDO } = createDeckDO();
       const request1 = new Request('http://deck/reset', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -156,30 +142,8 @@ describe('DeckDO', () => {
   });
 
   describe('handleDeal', () => {
-    beforeEach(async () => {
-      // Reset deck first
-      const resetRequest = new Request('http://deck/reset', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          useJokers: true,
-          sessionId: 'test-session',
-        }),
-      });
-      const resetResponse = await deckDO.fetch(resetRequest);
-      const resetResult = (await resetResponse.json()) as any;
-
-      if (!resetResult.success) {
-        throw new Error(
-          `Reset failed: ${JSON.stringify(resetResult, null, 2)}`,
-        );
-      }
-    });
-
     it('should deal cards to participants', async () => {
-      // Create a fresh DeckDO instance for this test
-      const freshDeckDO = new DeckDO(mockState as any, mockEnv);
-
+      const { deckDO } = createDeckDO();
       // Reset deck first
       const resetRequest = new Request('http://deck/reset', {
         method: 'POST',
@@ -189,20 +153,7 @@ describe('DeckDO', () => {
           sessionId: 'test-session',
         }),
       });
-      const resetResponse = await freshDeckDO.fetch(resetRequest);
-      const resetResult = (await resetResponse.json()) as any;
-
-      if (!resetResult.success) {
-        throw new Error(
-          `Reset failed: ${JSON.stringify(resetResult, null, 2)}`,
-        );
-      }
-
-      // Check what's in the mock storage
-      const storedData = mockStorage.get('deckState');
-      if (!storedData) {
-        throw new Error('No data stored in mock storage after reset');
-      }
+      await deckDO.fetch(resetRequest);
 
       const request = new Request('http://deck/deal', {
         method: 'POST',
@@ -213,7 +164,7 @@ describe('DeckDO', () => {
         }),
       });
 
-      const response = await freshDeckDO.fetch(request);
+      const response = await deckDO.fetch(request);
       const result = (await response.json()) as any;
 
       if (!result.success) {
@@ -228,12 +179,22 @@ describe('DeckDO', () => {
       expect(result.data.dealt.actor1).toHaveProperty('id');
 
       // Cards should be different
-      expect(result.data.dealt.actor1.rank).not.toBe(
-        result.data.dealt.actor2.rank,
-      );
+      expect(result.data.dealt.actor1.id).not.toBe(result.data.dealt.actor2.id);
     });
 
     it('should handle extra draws for specific actors', async () => {
+      const { deckDO } = createDeckDO();
+      // Reset deck first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      await deckDO.fetch(resetRequest);
+
       const request = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -251,6 +212,18 @@ describe('DeckDO', () => {
     });
 
     it('should reduce deck size when dealing', async () => {
+      const { deckDO } = createDeckDO();
+      // Reset deck first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      await deckDO.fetch(resetRequest);
+
       // Get initial deck size
       const stateRequest = new Request('http://deck/state', { method: 'GET' });
       const stateResponse = await deckDO.fetch(stateRequest);
@@ -277,6 +250,18 @@ describe('DeckDO', () => {
     });
 
     it('should handle dealing to many participants', async () => {
+      const { deckDO } = createDeckDO();
+      // Reset deck first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      await deckDO.fetch(resetRequest);
+
       const participants = Array.from(
         { length: 10 },
         (_, i) => `actor${i + 1}`,
@@ -304,8 +289,7 @@ describe('DeckDO', () => {
     });
 
     it('should reject deal if deck not initialized', async () => {
-      // Create new deck DO without initializing
-      const newDeckDO = new DeckDO(mockState as any, mockEnv);
+      const { deckDO, mockStorage } = createDeckDO();
       // Clear mock storage to ensure no deck state
       mockStorage.clear();
 
@@ -318,7 +302,7 @@ describe('DeckDO', () => {
         }),
       });
 
-      const response = await newDeckDO.fetch(request);
+      const response = await deckDO.fetch(request);
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
@@ -327,7 +311,8 @@ describe('DeckDO', () => {
   });
 
   describe('handleRecall', () => {
-    beforeEach(async () => {
+    it('should recall a dealt card', async () => {
+      const { deckDO } = createDeckDO();
       // Reset and deal cards first
       const resetRequest = new Request('http://deck/reset', {
         method: 'POST',
@@ -348,9 +333,7 @@ describe('DeckDO', () => {
         }),
       });
       await deckDO.fetch(dealRequest);
-    });
 
-    it('should recall a dealt card', async () => {
       const request = new Request('http://deck/recall', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -370,6 +353,28 @@ describe('DeckDO', () => {
     });
 
     it('should reject recall for actor without card', async () => {
+      const { deckDO } = createDeckDO();
+      // Reset and deal cards first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      await deckDO.fetch(resetRequest);
+
+      const dealRequest = new Request('http://deck/deal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          to: ['actor1'],
+          extra: {},
+        }),
+      });
+      await deckDO.fetch(dealRequest);
+
       const request = new Request('http://deck/recall', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -386,6 +391,28 @@ describe('DeckDO', () => {
     });
 
     it('should remove card from dealt when recalled', async () => {
+      const { deckDO } = createDeckDO();
+      // Reset and deal cards first
+      const resetRequest = new Request('http://deck/reset', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          useJokers: true,
+          sessionId: 'test-session',
+        }),
+      });
+      await deckDO.fetch(resetRequest);
+
+      const dealRequest = new Request('http://deck/deal', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          to: ['actor1'],
+          extra: {},
+        }),
+      });
+      await deckDO.fetch(dealRequest);
+
       // Get initial dealt state
       const stateRequest = new Request('http://deck/state', { method: 'GET' });
       const stateResponse = await deckDO.fetch(stateRequest);
@@ -414,6 +441,7 @@ describe('DeckDO', () => {
 
   describe('handleGetState', () => {
     it('should return deck state after reset', async () => {
+      const { deckDO } = createDeckDO();
       // Reset deck first
       const resetRequest = new Request('http://deck/reset', {
         method: 'POST',
@@ -441,7 +469,7 @@ describe('DeckDO', () => {
     });
 
     it('should return error if no deck initialized', async () => {
-      const newDeckDO = new DeckDO(mockState as any, mockEnv);
+      const { deckDO, mockStorage } = createDeckDO();
       // Clear mock storage to ensure no deck state
       mockStorage.clear();
 
@@ -449,7 +477,7 @@ describe('DeckDO', () => {
         method: 'GET',
       });
 
-      const response = await newDeckDO.fetch(request);
+      const response = await deckDO.fetch(request);
       const result = (await response.json()) as any;
 
       expect(result.success).toBe(false);
@@ -457,6 +485,7 @@ describe('DeckDO', () => {
     });
 
     it('should track joker rounds correctly', async () => {
+      const { deckDO } = createDeckDO();
       // Reset deck
       const resetRequest = new Request('http://deck/reset', {
         method: 'POST',
@@ -504,6 +533,7 @@ describe('DeckDO', () => {
 
   describe('Error Handling', () => {
     it('should handle invalid JSON in request body', async () => {
+      const { deckDO } = createDeckDO();
       const request = new Request('http://deck/reset', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -518,6 +548,7 @@ describe('DeckDO', () => {
     });
 
     it('should handle unknown endpoints', async () => {
+      const { deckDO } = createDeckDO();
       const request = new Request('http://deck/unknown', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -530,6 +561,7 @@ describe('DeckDO', () => {
     });
 
     it('should handle missing required fields', async () => {
+      const { deckDO } = createDeckDO();
       const request = new Request('http://deck/deal', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },

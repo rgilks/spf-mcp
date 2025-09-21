@@ -182,6 +182,7 @@ const createMockEnv = () => ({
               },
               serverTs: new Date().toISOString(),
             }),
+            { headers: { 'Content-Type': 'application/json' } },
           );
         }
 
