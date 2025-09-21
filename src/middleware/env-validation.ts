@@ -20,6 +20,7 @@ export function validateEnvironment(env: Env): void {
     console.error(
       `Missing required environment variables: ${missingVars.join(', ')}`,
     );
+    console.error('Available environment keys:', Object.keys(env));
     throw new Error(
       `Missing required environment variables: ${missingVars.join(', ')}. ` +
         'Please ensure all required secrets are configured in Cloudflare Workers.',
